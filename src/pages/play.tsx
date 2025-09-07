@@ -143,8 +143,6 @@ const Battle: NextPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-gray-900">
       <Header 
-        userName={player.name}
-        userAvatar={player.avatar || ''}
         currentMana={player.mana?.current || 0}
         maxMana={player.mana?.max || 0}
       />

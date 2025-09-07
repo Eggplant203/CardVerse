@@ -25,11 +25,8 @@ export function migrateExistingCards(): void {
     );
     
     if (!needsMigration) {
-      console.log('No card migration needed');
       return;
     }
-    
-    console.log(`Migrating ${existingCards.length} cards to include new fields`);
     
     // Update each card with missing fields
     const updatedCards = existingCards.map(card => {
@@ -50,7 +47,6 @@ export function migrateExistingCards(): void {
     // Save back to storage
     LocalStorage.setItem(STORAGE_KEYS.CARDS, updatedCards);
     
-    console.log('Card migration completed');
   } catch (error) {
     console.error('Error migrating cards:', error);
   }

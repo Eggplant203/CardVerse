@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { NextPage } from 'next';
 import { motion, AnimatePresence } from 'framer-motion';
 import Header from '@/components/layout/Header';
 import Card from '@/components/card/Card';
 import Button from '@/components/ui/Button';
 import { Card as CardType } from '@/types/card';
-import { getCardCollection } from '@/services/storage/localStorage';
+import { CardAPI } from '@/services/api/cardAPI';
+import AuthContext, { useAuth } from '@/context/AuthContext';
 
 interface Deck {
   id: string;
@@ -15,6 +16,7 @@ interface Deck {
 }
 
 const Decks: NextPage = () => {
+  const auth = useAuth();
   const [cards, setCards] = useState<CardType[]>([]);
   const [decks, setDecks] = useState<Deck[]>([]);
   const [selectedDeck, setSelectedDeck] = useState<Deck | null>(null);
@@ -26,27 +28,32 @@ const Decks: NextPage = () => {
     // Load the user's card collection and decks from storage
     const loadData = async () => {
       try {
-        const collection = await getCardCollection();
-        setCards(collection);
-        
-        // For now, create a sample deck if none exists
-        // In a real app, this would be loaded from storage
-        if (decks.length === 0) {
-          const sampleDeck: Deck = {
-            id: 'sample-deck-1',
-            name: 'My First Deck',
-            cards: collection.slice(0, 5), // First 5 cards
-            coverCard: collection[0]
-          };
-          setDecks([sampleDeck]);
+        const result = await CardAPI.getUserCards(auth.user?.id || null, auth.isGuestMode);
+        if (result.success && result.data) {
+          setCards(result.data);
+          
+          // For now, create a sample deck if none exists
+          // In a real app, this would be loaded from storage
+          if (decks.length === 0) {
+            const sampleDeck: Deck = {
+              id: 'sample-deck-1',
+              name: 'My First Deck',
+              cards: result.data.slice(0, 5), // First 5 cards
+              coverCard: result.data[0]
+            };
+            setDecks([sampleDeck]);
+          }
+        } else {
+          setCards([]);
         }
       } catch (err) {
         console.error('Failed to load data:', err);
+        setCards([]);
       }
     };
 
     loadData();
-  }, []);
+  }, [auth.isGuestMode, auth.user?.id, decks.length]);
 
   const handleCreateDeck = () => {
     setSelectedDeck(null);
@@ -75,11 +82,11 @@ const Decks: NextPage = () => {
 
   const toggleCardInDeck = (card: CardType) => {
     const isCardInDeck = selectedCards.some(c => c.id === card.id);
-    
+
     if (isCardInDeck) {
       setSelectedCards(selectedCards.filter(c => c.id !== card.id));
     } else {
-      // Check if deck has max cards (usually 30)
+      // Check if deck has max cards (30)
       if (selectedCards.length < 30) {
         setSelectedCards([...selectedCards, card]);
       }
@@ -87,11 +94,6 @@ const Decks: NextPage = () => {
   };
 
   const handleSaveDeck = () => {
-    if (selectedCards.length < 20) {
-      alert("Your deck must have at least 20 cards.");
-      return;
-    }
-
     const deckToSave: Deck = {
       id: selectedDeck?.id || `deck-${Date.now()}`,
       name: editingDeckName,
@@ -156,7 +158,7 @@ const Decks: NextPage = () => {
               <h3 className="text-xl font-title mb-4 text-white flex justify-between items-center">
                 <span>Selected Cards ({selectedCards.length}/30)</span>
                 <span className="text-sm text-gray-400">
-                  {selectedCards.length < 20 ? `Need ${20 - selectedCards.length} more cards` : 'Deck ready'}
+                  {selectedCards.length === 30 ? 'Deck full' : 'Add more cards'}
                 </span>
               </h3>
               

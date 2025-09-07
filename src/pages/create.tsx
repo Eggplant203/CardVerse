@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useContext } from 'react';
 import { NextPage } from 'next';
 import { motion } from 'framer-motion';
 import { useDropzone } from 'react-dropzone';
@@ -9,6 +9,8 @@ import { analyzeImage } from '@/services/ai/imageAnalysis';
 import { generateCardFromAnalysis } from '@/services/ai/cardGeneration';
 import { ImageStorage } from '@/services/storage/imageStorage';
 import { formatEffectDescription } from '@/utils/cardUtils';
+import AuthContext, { useAuth } from '@/context/AuthContext';
+import { CardAPI } from '@/services/api/cardAPI';
 
 // Function to get color class based on card rarity
 function getRarityTextColor(rarity: string): string {
@@ -26,6 +28,7 @@ function getRarityTextColor(rarity: string): string {
 }
 
 const CreateCard: NextPage = () => {
+  const auth = useAuth();
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisProgress, setAnalysisProgress] = useState(0);
@@ -84,6 +87,9 @@ const CreateCard: NextPage = () => {
         setGeneratedCard(cardData);
         setCardName(cardData.name);
         setError(null);
+        
+        // Reset save state to allow saving the uploaded card
+        setIsCardSaved(false);
         
         // Reset the file input to allow selecting the same file again
         if (jsonFileInputRef.current) {
@@ -233,14 +239,21 @@ const CreateCard: NextPage = () => {
       // Mark card as saved
       setIsCardSaved(true);
       
-      // Get existing cards from localStorage
-      const existingCards = JSON.parse(localStorage.getItem('ai_card_game_cards') || '[]');
+      // Save the card using the API service (handles both localStorage and database)
+      const result = await CardAPI.saveCard(auth.user?.id || null, cardToSave, auth.isGuestMode);
       
-      // Add the new card to the collection
-      const updatedCards = [...existingCards, cardToSave];
-      
-      // Save updated collection back to localStorage
-      localStorage.setItem('ai_card_game_cards', JSON.stringify(updatedCards));
+      if (result.success) {
+        setSaveStatus({
+          message: 'Card saved successfully!',
+          type: 'success'
+        });
+      } else {
+        setSaveStatus({
+          message: result.error?.message || 'Failed to save card',
+          type: 'error'
+        });
+        setIsCardSaved(false); // Allow retry
+      }
       
       // Also save image to IndexedDB for potential future optimization
       try {

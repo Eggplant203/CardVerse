@@ -25,9 +25,6 @@ function normalizeAnalysisResponse(response: any): AIAnalysisResult {
       }
       return String(item); // Convert non-string values to strings
     });
-    
-    // Log to help with debugging
-    console.log("Normalized objectsDetected:", result.objectsDetected);
   }
   
   // Handle suggestedEffects that might be strings or objects with wrong format
@@ -200,10 +197,6 @@ export async function analyzeImage(imageBase64: string): Promise<AIAnalysisResul
     }
 
     const data = await response.json();
-    
-    // Log the response structure to help with debugging
-    console.log('API Response structure:', JSON.stringify(data).substring(0, 200) + '...');
-    
     // Check if we have valid candidates
     if (!data.candidates || !data.candidates.length || !data.candidates[0].content || !data.candidates[0].content.parts) {
       console.error('Unexpected API response structure:', data);
@@ -226,7 +219,6 @@ export async function analyzeImage(imageBase64: string): Promise<AIAnalysisResul
       
       if (jsonMatch) {
         const jsonString = jsonMatch[0];
-        console.log('Found JSON string:', jsonString.substring(0, 100) + '...');
         
         try {
           jsonResponse = JSON.parse(jsonString);
@@ -236,7 +228,6 @@ export async function analyzeImage(imageBase64: string): Promise<AIAnalysisResul
           
         } catch (parseError) {
           console.error('JSON parse error:', parseError);
-          console.log('Attempting to clean and parse JSON');
           // Try to clean the JSON string
           const cleanedJson = jsonString.replace(/[\u0000-\u001F]+/g, ' ')
                                         .replace(/\s+/g, ' ')

@@ -13,6 +13,7 @@ export interface PlayerStats {
 export interface Deck {
   id: string;
   name: string;
+  description?: string;
   cards: Card[];
   coverCard: Card | null;
 }

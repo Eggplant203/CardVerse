@@ -1,5 +1,6 @@
 import { Card } from '@/types/card';
 import { ApiResponse, CardGenerationRequest } from '@/types/api';
+import { saveCard, deleteCard, getAllCards } from '../storage/cardStorage';
 
 // Simulate API endpoints (in a real app, these would call actual server endpoints)
 const API_URL = '/api';
@@ -41,15 +42,45 @@ export class CardAPI {
   /**
    * Get a user's card collection
    */
-  public static async getUserCards(userId: string): Promise<ApiResponse<Card[]>> {
+  public static async getUserCards(userId: string | null, isGuest: boolean = false): Promise<ApiResponse<Card[]>> {
     try {
-      const response = await fetch(`${API_URL}/cards/user/${userId}`);
+      console.log('CardAPI.getUserCards called with:', { userId, isGuest });
+
+      if (isGuest || !userId) {
+        console.log('Getting cards from localStorage for guest');
+        // Get from localStorage for guest users
+        const cards = getAllCards(true);
+        console.log('LocalStorage cards count:', cards.length);
+        return {
+          success: true,
+          data: cards
+        };
+      }
+
+      console.log('Getting cards from database for authenticated user');
+      const token = localStorage.getItem('cardverse_access_token');
+      console.log('Access token exists for getUserCards:', !!token);
+
+      // Get from database for authenticated users
+      const response = await fetch(`${API_URL}/cards`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      console.log('Get cards API response status:', response.status);
 
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Get cards API error:', errorText);
         throw new Error(`API request failed with status: ${response.status}`);
       }
 
-      return await response.json();
+      const result = await response.json();
+      console.log('Get cards API response:', result);
+      console.log('Cards returned count:', result.data ? result.data.length : 0);
+
+      return result;
     } catch (error) {
       console.error('Error fetching user cards:', error);
       return {
@@ -65,14 +96,29 @@ export class CardAPI {
   /**
    * Save a card to user's collection
    */
-  public static async saveCard(userId: string, card: Card): Promise<ApiResponse<Card>> {
+  public static async saveCard(userId: string | null, card: Card, isGuest: boolean = false): Promise<ApiResponse<Card>> {
     try {
-      const response = await fetch(`${API_URL}/cards/save`, {
+      if (isGuest || !userId) {
+        // Save to localStorage for guest users
+        const success = saveCard(card, true);
+        if (success) {
+          return {
+            success: true,
+            data: card
+          };
+        } else {
+          throw new Error('Failed to save card to localStorage');
+        }
+      }
+
+      // Save to database for authenticated users
+      const response = await fetch(`${API_URL}/cards`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('cardverse_access_token')}`,
         },
-        body: JSON.stringify({ userId, card }),
+        body: JSON.stringify({ card }),
       });
 
       if (!response.ok) {
@@ -95,21 +141,44 @@ export class CardAPI {
   /**
    * Delete a card from user's collection
    */
-  public static async deleteCard(userId: string, cardId: string): Promise<ApiResponse<boolean>> {
+  public static async deleteCard(userId: string | null, cardId: string, isGuest: boolean = false): Promise<ApiResponse<boolean>> {
     try {
-      const response = await fetch(`${API_URL}/cards/${cardId}`, {
+      console.log('CardAPI.deleteCard called with:', { userId, cardId, isGuest });
+
+      if (isGuest || !userId) {
+        console.log('Deleting card from localStorage for guest user');
+        // Delete from localStorage for guest users
+        const success = deleteCard(cardId, true);
+        return {
+          success: true,
+          data: success
+        };
+      }
+
+      console.log('Deleting card from database for authenticated user');
+      const token = localStorage.getItem('cardverse_access_token');
+      console.log('Access token exists:', !!token);
+
+      // Delete from database for authenticated users
+      const response = await fetch(`${API_URL}/cards?cardId=${cardId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({ userId }),
       });
 
+      console.log('API response status:', response.status);
+
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('API error response:', errorText);
         throw new Error(`API request failed with status: ${response.status}`);
       }
 
-      return await response.json();
+      const result = await response.json();
+      console.log('API response:', result);
+      return result;
     } catch (error) {
       console.error('Error deleting card:', error);
       return {
@@ -125,14 +194,29 @@ export class CardAPI {
   /**
    * Update a card in user's collection
    */
-  public static async updateCard(userId: string, card: Card): Promise<ApiResponse<Card>> {
+  public static async updateCard(userId: string | null, card: Card, isGuest: boolean = false): Promise<ApiResponse<Card>> {
     try {
-      const response = await fetch(`${API_URL}/cards/${card.id}`, {
+      if (isGuest || !userId) {
+        // Update in localStorage for guest users
+        const success = saveCard(card, true);
+        if (success) {
+          return {
+            success: true,
+            data: card
+          };
+        } else {
+          throw new Error('Failed to update card in localStorage');
+        }
+      }
+
+      // Update in database for authenticated users
+      const response = await fetch(`${API_URL}/cards?cardId=${card.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('cardverse_access_token')}`,
         },
-        body: JSON.stringify({ userId, card }),
+        body: JSON.stringify({ card }),
       });
 
       if (!response.ok) {

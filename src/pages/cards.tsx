@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { NextPage } from 'next';
 import { motion, AnimatePresence } from 'framer-motion';
 import Header from '@/components/layout/Header';
 import Card from '@/components/card/Card';
 import Button from '@/components/ui/Button';
 import { Card as CardType, Rarity, Element } from '@/types/card';
-import { getCardCollection } from '@/services/storage/localStorage';
-import { deleteCard } from '@/services/storage/cardStorage';
+import { CardAPI } from '@/services/api/cardAPI';
 import { formatEffectDescription } from '@/utils/cardUtils';
+import AuthContext, { useAuth } from '@/context/AuthContext';
 
 // Function to get rarity text color
 function getRarityTextColor(rarity: string): string {
@@ -81,6 +81,7 @@ function downloadCardAsJSON(card: CardType): void {
 
 
 const Collection: NextPage = () => {
+  const auth = useAuth();
   const [cards, setCards] = useState<CardType[]>([]);
   const [selectedCard, setSelectedCard] = useState<CardType | null>(null);
   const [filter, setFilter] = useState<string>('all');
@@ -93,15 +94,26 @@ const Collection: NextPage = () => {
     // Load the user's card collection from storage
     const loadCollection = async () => {
       try {
-        const collection = await getCardCollection();
-        setCards(collection);
+        const result = await CardAPI.getUserCards(auth.user?.id || null, auth.isGuestMode);
+        if (result.success && result.data) {
+          setCards(result.data);
+        } else {
+          setCards([]);
+        }
       } catch (err) {
         console.error('Failed to load card collection:', err);
+        setCards([]);
       }
     };
 
     loadCollection();
-  }, []);
+  }, [auth.isGuestMode, auth.user?.id]);
+
+  // Debug: Log when cards state changes
+  useEffect(() => {
+    console.log('Cards state changed, new length:', cards.length);
+    console.log('Cards IDs:', cards.map(card => card.id));
+  }, [cards]);
 
   // Filter cards based on current filter settings
   const filteredCards = cards.filter(card => {
@@ -161,12 +173,29 @@ const Collection: NextPage = () => {
     setShowMoreDetails(false);
   };
   
-  const handleDeleteCard = () => {
+  const handleDeleteCard = async () => {
     if (selectedCard) {
-      if (deleteCard(selectedCard.id)) {
+      console.log('Starting delete process for card:', selectedCard.id);
+      const result = await CardAPI.deleteCard(auth.user?.id || null, selectedCard.id, auth.isGuestMode);
+      console.log('Delete result:', result);
+      
+      if (result.success) {
+        console.log('Delete successful, reloading collection...');
         // Reload collection after deletion
-        getCardCollection().then(updatedCards => setCards(updatedCards));
+        const collectionResult = await CardAPI.getUserCards(auth.user?.id || null, auth.isGuestMode);
+        console.log('Reload collection result:', collectionResult);
+        
+        if (collectionResult.success && collectionResult.data) {
+          console.log('Setting new cards array with length:', collectionResult.data.length);
+          console.log('Previous cards length:', cards.length);
+          setCards([...collectionResult.data]); // Force new array reference
+          console.log('Cards state updated');
+        } else {
+          console.log('Failed to reload collection or no data returned');
+        }
         closeCardModal();
+      } else {
+        console.log('Delete failed:', result.error);
       }
     }
   };

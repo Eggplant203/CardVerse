@@ -17,10 +17,6 @@ export async function generateCardFromAnalysis(analysis: AIAnalysisResult): Prom
       console.error('Analysis result is null or undefined');
       throw new Error('Invalid analysis result');
     }
-    
-    // Log the analysis result to help with debugging
-    console.log('Analysis result received:', JSON.stringify(analysis).substring(0, 200) + '...');
-    
     // Use existing card generation logic with the analysis result
     return generateCard(
       analysis,
@@ -90,7 +86,6 @@ export function generateCard(
   const effects = (analysisResult.suggestedEffects || []).map(suggestion => {
     // Handle case where suggestion is a string (from fallback data)
     if (typeof suggestion === 'string') {
-      console.log('Converting string suggestion to object:', suggestion);
       
       // Try to find a matching effect by description
       const matchingEffect = Object.values(allEffects).find(effect => 
@@ -193,9 +188,6 @@ export function generateCard(
           analysisResult.objectsDetected.length > 0) {
         
         const mainSubject = analysisResult.objectsDetected[0];
-        
-        // Log to help with debugging
-        console.log("Main subject for card name:", mainSubject);
         
         // Check if the name is suspiciously short (likely an error)
         if (typeof mainSubject === 'string' && mainSubject.length <= 1) {

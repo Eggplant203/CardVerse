@@ -6,18 +6,28 @@ import { Card } from '@/types/card';
 // Storage key constants
 const STORAGE_KEYS = {
   CARDS: 'ai_card_game_cards',
-  USER: 'ai_card_game_user',
-  DECKS: 'ai_card_game_decks',
+  GUEST_CARDS: 'cardverse_guest_cards',
+  GUEST_DECKS: 'cardverse_guest_decks'
 };
 
 /**
  * Get all cards from storage
+ * @param isGuest Whether to get guest cards or authenticated user cards
  * @returns Array of all cards
  */
-export async function getCardCollection(): Promise<Card[]> {
+export async function getCardCollection(isGuest: boolean = false): Promise<Card[]> {
   try {
-    const cardsJson = localStorage.getItem(STORAGE_KEYS.CARDS);
-    return cardsJson ? JSON.parse(cardsJson) : [];
+    const storageKey = isGuest ? STORAGE_KEYS.GUEST_CARDS : STORAGE_KEYS.CARDS;
+    const cardsJson = localStorage.getItem(storageKey);
+    if (!cardsJson) return [];
+    
+    const cards = JSON.parse(cardsJson);
+    
+    // Convert createdAt strings back to Date objects
+    return cards.map((card: any) => ({
+      ...card,
+      createdAt: card.createdAt instanceof Date ? card.createdAt : new Date(card.createdAt)
+    }));
   } catch (error) {
     console.error('Error getting card collection:', error);
     return [];
