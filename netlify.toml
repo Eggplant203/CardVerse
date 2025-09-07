@@ -7,21 +7,6 @@
 [build.environment]
   # Node.js version
   NODE_VERSION = "18"
-  # Environment
-  NODE_ENV = "production"
-
-# Environment variables (these will be overridden by Netlify Environment Variables)
-[build.environment]
-  NEXT_PUBLIC_GEMINI_API_KEY = "$NEXT_PUBLIC_GEMINI_API_KEY"
-  DATABASE_URL = "$DATABASE_URL"
-  DIRECT_URL = "$DIRECT_URL"
-  JWT_SECRET = "$JWT_SECRET"
-  REFRESH_SECRET = "$REFRESH_SECRET"
-  EMAIL_HOST = "smtp.gmail.com"
-  EMAIL_PORT = "587"
-  EMAIL_USER = "$EMAIL_USER"
-  EMAIL_PASS = "$EMAIL_PASS"
-  FROM_EMAIL = "$FROM_EMAIL"
 
 # Redirect rules for Next.js API routes
 [[redirects]]
@@ -43,7 +28,6 @@
     X-XSS-Protection = "1; mode=block"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https:;"
 
 # Cache static assets
 [[headers]]
