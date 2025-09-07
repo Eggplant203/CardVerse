@@ -135,7 +135,7 @@ function normalizeAnalysisResponse(response: any): AIAnalysisResult {
 }
 
 // Your Gemini API key
-const API_KEY = process.env.GEMINI_API_KEY;
+const API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
 const API_URL = 'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent';
 
 /**
@@ -145,7 +145,7 @@ const API_URL = 'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-
 export async function analyzeImage(imageBase64: string): Promise<AIAnalysisResult> {
   try {
     if (!API_KEY) {
-      throw new Error('GEMINI_API_KEY environment variable is not set');
+      throw new Error('NEXT_PUBLIC_GEMINI_API_KEY environment variable is not set');
     }
     // Prepare the request body
     const requestBody = {
