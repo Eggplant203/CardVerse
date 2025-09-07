@@ -8,6 +8,7 @@ import { Rarity, Element, CardType, Card } from '@/types/card';
 import { analyzeImage } from '@/services/ai/imageAnalysis';
 import { generateCardFromAnalysis } from '@/services/ai/cardGeneration';
 import { ImageStorage } from '@/services/storage/imageStorage';
+import { formatEffectDescription } from '@/utils/cardUtils';
 
 // Function to get color class based on card rarity
 function getRarityTextColor(rarity: string): string {
@@ -546,7 +547,7 @@ const CreateCard: NextPage = () => {
                               {generatedCard.effects.map((effect, index) => (
                                 <div key={index} className="bg-gray-700 p-3 rounded-lg">
                                   <p className="text-yellow-400 text-sm font-semibold mb-1">{effect.name}</p>
-                                  <p className="text-white text-sm leading-relaxed">{effect.description}</p>
+                                  <p className="text-white text-sm leading-relaxed" dangerouslySetInnerHTML={{ __html: formatEffectDescription(effect.description) }}></p>
                                 </div>
                               ))}
                             </div>

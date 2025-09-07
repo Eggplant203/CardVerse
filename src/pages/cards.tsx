@@ -7,6 +7,7 @@ import Button from '@/components/ui/Button';
 import { Card as CardType, Rarity, Element } from '@/types/card';
 import { getCardCollection } from '@/services/storage/localStorage';
 import { deleteCard } from '@/services/storage/cardStorage';
+import { formatEffectDescription } from '@/utils/cardUtils';
 
 // Function to get rarity text color
 function getRarityTextColor(rarity: string): string {
@@ -343,13 +344,15 @@ const Collection: NextPage = () => {
                   <div className="mb-4">
                     <div className="text-gray-400 text-sm">Effects</div>
                     {selectedCard.effects && selectedCard.effects.length > 0 ? (
-                      <ul className="list-disc pl-5 text-white text-sm">
+                      <div className="space-y-2">
                         {selectedCard.effects.map((effect, index) => (
-                          <li key={index} className="mb-1">
-                            <span className="font-semibold">{effect.name}:</span> {effect.description}
-                          </li>
+                          <div key={index} className="p-3 bg-gray-700 rounded-md border-l-3 border-blue-400">
+                            <span className="text-yellow-400 text-sm font-semibold mb-1">
+                              {effect.name}:
+                            </span> <span className="text-white text-sm" dangerouslySetInnerHTML={{ __html: formatEffectDescription(effect.description) }}></span>
+                          </div>
                         ))}
-                      </ul>
+                      </div>
                     ) : (
                       <div className="text-white text-sm">No effects</div>
                     )}
