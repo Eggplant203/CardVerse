@@ -1,14 +1,12 @@
 [build]
-  # Build command for Next.js
-  command = "npm run build"
+  # Build command for Next.js with environment variables properly exposed
+  command = "NEXT_PUBLIC_GEMINI_API_KEY=$NEXT_PUBLIC_GEMINI_API_KEY npm run build"
   # Publish directory for Next.js (Netlify will automatically detect this)
   publish = ".next"
 
 [build.environment]
   # Node.js version
   NODE_VERSION = "18"
-  # Enable environment variables in client-side
-  NEXT_PUBLIC_GEMINI_API_KEY = ""
 
 # Redirect rules for Next.js SPA
 [[redirects]]
