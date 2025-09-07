@@ -8,11 +8,6 @@
   # Node.js version
   NODE_VERSION = "18"
 
-# Environment variables (add your API keys here)
-[build.environment]
-  # Add your Gemini API key here
-  # GEMINI_API_KEY = "your-api-key-here"
-
 # Redirect rules for Next.js SPA
 [[redirects]]
   from = "/api/*"
