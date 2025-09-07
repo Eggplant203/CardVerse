@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16">
+  <defs>
+    <linearGradient id="smallCardGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4F46E5;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#7C3AED;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#EC4899;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Card background -->
+  <rect x="1" y="2" width="14" height="12" rx="1.5" ry="1.5" fill="url(#smallCardGradient)" stroke="#1F2937" stroke-width="0.5"/>
+
+  <!-- Card symbol -->
+  <g transform="translate(8,8)">
+    <path d="M-2,0 L0,-3 L2,0 L0,3 Z" fill="#FFFFFF" opacity="0.9"/>
+    <path d="M-1,0 L0,-1.5 L1,0 L0,1.5 Z" fill="#4F46E5"/>
+  </g>
+
+  <!-- Corner symbols -->
+  <text x="2.5" y="5" font-family="Arial, sans-serif" font-size="3" font-weight="bold" fill="#FFFFFF">♠</text>
+  <text x="10.5" y="13" font-family="Arial, sans-serif" font-size="3" font-weight="bold" fill="#FFFFFF">♠</text>
+</svg>

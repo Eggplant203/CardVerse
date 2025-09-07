@@ -1,0 +1,71 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 255, 255, 255;
+  --background-start-rgb: 26, 32, 44;
+  --background-end-rgb: 17, 24, 39;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
+  min-height: 100vh;
+  font-family: "Inter", sans-serif;
+}
+
+@layer components {
+  .card {
+    @apply rounded-lg overflow-hidden shadow-lg transition-all duration-300;
+  }
+
+  .card-common {
+    @apply border-2 border-[#95A5A6];
+  }
+
+  .card-uncommon {
+    @apply border-2 border-[#3498DB];
+  }
+
+  .card-rare {
+    @apply border-2 border-[#9B59B6];
+  }
+
+  .card-epic {
+    @apply border-2 border-[#E74C3C];
+  }
+
+  .card-legendary {
+    @apply border-2 border-[#F1C40F];
+  }
+
+  .card-mythic {
+    @apply border-2 border-[#B83280] shadow-lg shadow-[rgba(184,50,128,0.4)];
+  }
+
+  .card-unique {
+    @apply border-2 border-[#00FFFF] shadow-lg shadow-[rgba(0,255,255,0.4)];
+  }
+
+  .btn {
+    @apply px-4 py-2 rounded font-medium transition-all duration-200;
+  }
+
+  .btn-primary {
+    @apply bg-blue-600 text-white hover:bg-blue-700;
+  }
+
+  .btn-secondary {
+    @apply bg-gray-600 text-white hover:bg-gray-700;
+  }
+
+  .btn-accent {
+    @apply bg-accent text-white hover:bg-red-700;
+  }
+}
