@@ -8,17 +8,18 @@
   # Node.js version
   NODE_VERSION = "18"
 
-# Redirect rules for Next.js API routes
-[[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/:splat"
-  status = 200
+# Next.js plugin configuration
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
 
-# SPA fallback for client-side routing
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
+# Security headers
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
 
 # Security headers
 [[headers]]

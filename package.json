@@ -44,6 +44,7 @@
     "zustand": "^4.3.7"
   },
   "devDependencies": {
+    "@netlify/plugin-nextjs": "^5.13.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/nodemailer": "^7.0.1",
