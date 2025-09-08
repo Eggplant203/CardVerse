@@ -38,17 +38,17 @@ const Home: NextPage = () => {
           </motion.div>
           
           <motion.div 
-            className="image mt-8 md:mt-0"
+            className="image mt-8 md:mt-0 overflow-visible"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
             <div className="card-preview relative w-64 h-96">
               <div className="absolute top-0 left-0 w-64 h-96 transform rotate-[-15deg] translate-x-[-140px] translate-y-[20px]">
-                <Image src="/card-example-1.jpg" alt="Example Card" width={256} height={384} className="rounded-lg shadow-xl" />
+                <Image src="/card-example-1.jpg" alt="Example Card" width={256} height={384} className="rounded-lg shadow-xl" unoptimized priority />
               </div>
               <div className="absolute top-0 left-0 w-64 h-96 transform rotate-[5deg] translate-x-[-80px] translate-y-[-10px]">
-                <Image src="/card-example-2.jpg" alt="Example Card" width={256} height={384} className="rounded-lg shadow-xl" />
+                <Image src="/card-example-2.jpg" alt="Example Card" width={256} height={384} className="rounded-lg shadow-xl" unoptimized priority />
               </div>
             </div>
           </motion.div>
