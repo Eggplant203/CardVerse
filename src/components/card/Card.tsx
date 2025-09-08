@@ -40,39 +40,22 @@ const Card: React.FC<CardProps> = ({
 
   // Define element colors and icons
   const elementProperties = {
-    [Element.AURORA]: { color: 'bg-gradient-to-r from-purple-400 via-pink-500 to-blue-500', icon: '🌈' },
-    [Element.VOID]: { color: 'bg-gray-900', icon: '⚫' },
-    [Element.CRYSTAL]: { color: 'bg-fuchsia-600', icon: '💎' },
-    [Element.BLOOD]: { color: 'bg-red-800', icon: '🩸' },
-    [Element.STORM]: { color: 'bg-amber-400', icon: '⚡' },
-    [Element.FLORA]: { color: 'bg-emerald-600', icon: '🌿' },
-    [Element.AETHER]: { color: 'bg-indigo-600', icon: '🔮' },
+    [Element.AURORA]: { icon: '🌈' },
+    [Element.VOID]: { icon: '⚫' },
+    [Element.CRYSTAL]: { icon: '💎' },
+    [Element.BLOOD]: { icon: '🩸' },
+    [Element.STORM]: { icon: '⚡' },
+    [Element.FLORA]: { icon: '🌿' },
+    [Element.AETHER]: { icon: '🔮' },
   };
 
-  const elementColors = {
-    [Element.AURORA]: elementProperties[Element.AURORA].color,
-    [Element.VOID]: elementProperties[Element.VOID].color,
-    [Element.CRYSTAL]: elementProperties[Element.CRYSTAL].color,
-    [Element.BLOOD]: elementProperties[Element.BLOOD].color,
-    [Element.STORM]: elementProperties[Element.STORM].color,
-    [Element.FLORA]: elementProperties[Element.FLORA].color,
-    [Element.AETHER]: elementProperties[Element.AETHER].color,
-  };
-
-  // Create border colors mapping
-  const borderColors = {
-    [Element.AURORA]: 'border-purple-400',
-    [Element.VOID]: 'border-gray-900',
-    [Element.CRYSTAL]: 'border-fuchsia-600',
-    [Element.BLOOD]: 'border-red-800',
-    [Element.STORM]: 'border-amber-400',
-    [Element.FLORA]: 'border-emerald-600',
-    [Element.AETHER]: 'border-indigo-600',
-  };
+  // Get element color using the unified function
+  const getElementColor = (element: Element) => getElementHexColor(element);
 
   return (
     <motion.div
-      className={`card ${sizeClasses[size]} border-3 ${borderColors[card.element]} cursor-pointer flex flex-col overflow-hidden`}
+      className={`card ${sizeClasses[size]} border-3 cursor-pointer flex flex-col overflow-hidden`}
+      style={{ borderColor: getElementColor(card.element) }}
       whileHover={{ scale: 1.05, y: -10 }}
       animate={isSelected ? { scale: 1.1, y: -15 } : { opacity: 1, scale: 1 }}
       onClick={onClick}
@@ -82,7 +65,7 @@ const Card: React.FC<CardProps> = ({
       {/* Card Header */}
       <div className="card-header flex justify-between items-center p-1 bg-gray-800">
         <h3 className="text-xs font-bold truncate flex-1">{card.name}</h3>
-        <div className={`mana-cost w-4 h-4 rounded-full flex items-center justify-center ${elementColors[card.element]} text-white text-xs font-bold`}>
+        <div className="mana-cost w-4 h-4 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ backgroundColor: getElementColor(card.element) }}>
           {card.stats.manaCost}
         </div>
       </div>
@@ -108,10 +91,10 @@ const Card: React.FC<CardProps> = ({
               unoptimized={card.imageUrl.startsWith('data:')} // Use unoptimized for base64 images
             />
             {/* Semi-transparent element overlay on top of the image */}
-            <div className={`absolute inset-0 opacity-20 ${elementColors[card.element]}`}></div>
+            <div className="absolute inset-0 opacity-5" style={{ backgroundColor: getElementColor(card.element) }}></div>
           </div>
         ) : (
-          <div className={`absolute inset-0 flex flex-col items-center justify-center ${elementColors[card.element]} bg-opacity-30 bg-gray-800`}>
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-opacity-30 bg-gray-800" style={{ backgroundColor: getElementColor(card.element) }}>
             <div className="text-2xl mb-1">
               {elementProperties[card.element]?.icon}
             </div>

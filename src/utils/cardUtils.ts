@@ -84,13 +84,13 @@ export function getElementTextColorStyle(element: Element): string {
  */
 export function getElementHexColor(element: Element): string {
   const elementHexColors: Record<Element, string> = {
-    [Element.AURORA]: '#9966CC',
-    [Element.VOID]: '#A0A0A0',
-    [Element.CRYSTAL]: '#88CCEE',
-    [Element.BLOOD]: '#CC3333',
-    [Element.STORM]: '#3399FF',
-    [Element.FLORA]: '#66CC66',
-    [Element.AETHER]: '#FFCC00',
+    [Element.AURORA]: '#7A52A3', // Darker purple
+    [Element.VOID]: '#808080', // Darker gray
+    [Element.CRYSTAL]: '#6BA8CC', // Darker light blue
+    [Element.BLOOD]: '#A52A2A', // Darker red
+    [Element.STORM]: '#2A7BC8', // Darker blue
+    [Element.FLORA]: '#4D994D', // Darker green
+    [Element.AETHER]: '#D4AA00', // Darker gold
   };
 
   return elementHexColors[element] || '#FFFFFF';
@@ -107,13 +107,13 @@ export function formatEffectDescription(description: string): string {
   
   // Element colors
   const elementColors: Record<string, string> = {
-    [Element.AURORA]: '#9966CC',    // Purple-ish
-    [Element.VOID]: '#463366',      // Dark purple
-    [Element.CRYSTAL]: '#88CCEE',   // Light blue
-    [Element.BLOOD]: '#CC3333',     // Dark red
-    [Element.STORM]: '#3399FF',     // Blue
-    [Element.FLORA]: '#66CC66',     // Green
-    [Element.AETHER]: '#FFCC00',    // Gold
+    [Element.AURORA]: '#7A52A3',    // Darker purple
+    [Element.VOID]: '#808080',      // Darker gray
+    [Element.CRYSTAL]: '#6BA8CC',   // Darker light blue
+    [Element.BLOOD]: '#A52A2A',     // Darker red
+    [Element.STORM]: '#2A7BC8',     // Darker blue
+    [Element.FLORA]: '#4D994D',     // Darker green
+    [Element.AETHER]: '#D4AA00',    // Darker gold
   };
 
   // Stat colors
