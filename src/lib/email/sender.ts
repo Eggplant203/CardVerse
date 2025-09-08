@@ -1,5 +1,5 @@
 import nodemailer from 'nodemailer';
-import { resetPasswordTemplate, welcomeTemplate } from './templates';
+import { resetPasswordTemplate, welcomeTemplate, passwordChangedTemplate } from './templates';
 
 // Create Gmail SMTP transporter
 const createTransporter = () => {
@@ -50,6 +50,34 @@ export async function sendPasswordResetEmail(
   } catch (error) {
     console.error('Error sending password reset email:', error);
     throw new Error('Failed to send password reset email');
+  }
+}
+
+/**
+ * Send a password changed notification email using Gmail SMTP
+ */
+export async function sendPasswordChangedEmail(
+  email: string,
+  username: string
+): Promise<void> {
+  // Generate email content
+  const html = passwordChangedTemplate(username);
+
+  // Send email
+  const transporter = createTransporter();
+
+  const mailOptions = {
+    from: FROM_EMAIL,
+    to: email,
+    subject: 'Your CardVerse Password Has Been Changed',
+    html: html,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+  } catch (error) {
+    console.error('Error sending password changed email:', error);
+    throw new Error('Failed to send password changed notification email');
   }
 }
 

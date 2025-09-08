@@ -28,9 +28,10 @@ export function generateAccessToken(userId: string, email: string, username: str
 /**
  * Generate a refresh token for a user
  */
-export function generateRefreshToken(userId: string): { token: string, tokenId: string, expiresAt: Date } {
+export function generateRefreshToken(userId: string, rememberMe: boolean = false): { token: string, tokenId: string, expiresAt: Date } {
   const tokenId = uuidv4();
-  const expiresIn = 7 * 24 * 60 * 60; // 7 days in seconds
+  // If rememberMe is true, use 30 days, otherwise use 1 day (session-based)
+  const expiresIn = rememberMe ? 30 * 24 * 60 * 60 : 24 * 60 * 60; // 30 days or 1 day in seconds
   const expiresAt = new Date(Date.now() + (expiresIn * 1000));
   
   const payload: RefreshTokenPayload = {

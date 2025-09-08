@@ -2,6 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { verifyAccessToken } from '../../../lib/auth/jwt';
 import { PASSWORD_REGEX, hashPassword, verifyPassword } from '../../../lib/auth/password';
 import { updateUserPassword, findUserByIdWithPassword } from '../../../lib/database/queries/users';
+import { sendPasswordChangedEmail } from '../../../lib/email/sender';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // Only allow POST method
@@ -93,6 +94,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Update password
     await updateUserPassword(decoded.userId, hashedNewPassword);
+
+    // Send password changed notification email (don't block on this)
+    try {
+      await sendPasswordChangedEmail(user.email, user.username);
+    } catch (emailError) {
+      console.error('Failed to send password changed email:', emailError);
+      // Don't fail the request if email fails
+    }
 
     return res.status(200).json({
       success: true,

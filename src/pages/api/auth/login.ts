@@ -23,7 +23,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   console.log('DATABASE_URL exists:', !!process.env.DATABASE_URL);
 
   try {
-    const { emailOrUsername, password } = req.body;
+    const { emailOrUsername, password, rememberMe = false } = req.body;
 
     // Validate inputs
     if (!emailOrUsername || !password) {
@@ -52,7 +52,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Generate tokens
     const accessToken = generateAccessToken(user.id, user.email, user.username);
-    const { token: refreshToken, expiresAt } = generateRefreshToken(user.id);
+    const { token: refreshToken, expiresAt } = generateRefreshToken(user.id, rememberMe);
     
     // Store refresh token
     await storeRefreshToken(user.id, refreshToken, expiresAt);

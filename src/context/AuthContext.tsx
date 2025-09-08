@@ -139,14 +139,25 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  // Initialize auth state from local storage
+  // Initialize auth state from local storage and session storage
   useEffect(() => {
     const loadStoredUser = async () => {
       try {
-        const storedToken = localStorage.getItem(ACCESS_TOKEN_KEY);
-        const storedRefreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
-        const storedUser = localStorage.getItem(USER_KEY);
+        // Check both localStorage and sessionStorage for tokens
+        const localToken = localStorage.getItem(ACCESS_TOKEN_KEY);
+        const localRefreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+        const localUser = localStorage.getItem(USER_KEY);
+        
+        const sessionToken = sessionStorage.getItem(ACCESS_TOKEN_KEY);
+        const sessionRefreshToken = sessionStorage.getItem(REFRESH_TOKEN_KEY);
+        const sessionUser = sessionStorage.getItem(USER_KEY);
+        
         const storedGuestMode = localStorage.getItem(GUEST_MODE_KEY);
+
+        // Use localStorage data if available, otherwise use sessionStorage
+        const storedToken = localToken || sessionToken;
+        const storedRefreshToken = localRefreshToken || sessionRefreshToken;
+        const storedUser = localUser || sessionUser;
 
         if (storedGuestMode === 'true') {
           // Guest mode
@@ -164,7 +175,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             if (refreshResponse.data.success) {
               const { accessToken, refreshToken: newRefreshToken } = refreshResponse.data;
 
-              // Store new tokens
+              // Store new tokens in the same storage that was used originally
+              const storage = localToken ? localStorage : sessionStorage;
+              storage.setItem(ACCESS_TOKEN_KEY, accessToken);
+              storage.setItem(REFRESH_TOKEN_KEY, newRefreshToken);
+              
+              // Also update localStorage for axios interceptor
               localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
               localStorage.setItem(REFRESH_TOKEN_KEY, newRefreshToken);
 
@@ -183,12 +199,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             }
           } catch (refreshError) {
             console.log('❌ Token refresh failed on app load, clearing stored data:', refreshError);
-            // Clear invalid tokens
+            // Clear invalid tokens from both storages
             localStorage.removeItem(ACCESS_TOKEN_KEY);
             localStorage.removeItem(REFRESH_TOKEN_KEY);
             localStorage.removeItem(USER_KEY);
             localStorage.removeItem(USER_CARDS_KEY);
             localStorage.removeItem(USER_DECKS_KEY);
+            
+            sessionStorage.removeItem(ACCESS_TOKEN_KEY);
+            sessionStorage.removeItem(REFRESH_TOKEN_KEY);
+            sessionStorage.removeItem(USER_KEY);
 
             // Default to guest mode
             setIsGuestMode(true);
@@ -271,7 +291,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (response.data.success) {
         const { accessToken, refreshToken, user } = response.data;
 
-        // Store tokens
+        // Choose storage based on rememberMe
+        const primaryStorage = credentials.rememberMe ? localStorage : sessionStorage;
+
+        // Store tokens in primary storage
+        primaryStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
+        primaryStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
+        primaryStorage.setItem(USER_KEY, JSON.stringify(user));
+
+        // Always store in localStorage for axios interceptor compatibility
         localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
         localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
         localStorage.setItem(USER_KEY, JSON.stringify(user));
@@ -317,7 +345,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     } catch (error) {
       console.error('Logout API error:', error);
     } finally {
-      // Clear stored data
+      // Clear stored data from both storages
       localStorage.removeItem(ACCESS_TOKEN_KEY);
       localStorage.removeItem(REFRESH_TOKEN_KEY);
       localStorage.removeItem(USER_KEY);
@@ -325,6 +353,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       localStorage.removeItem(GUEST_DECKS_KEY);
       localStorage.removeItem(USER_CARDS_KEY);
       localStorage.removeItem(USER_DECKS_KEY);
+      
+      sessionStorage.removeItem(ACCESS_TOKEN_KEY);
+      sessionStorage.removeItem(REFRESH_TOKEN_KEY);
+      sessionStorage.removeItem(USER_KEY);
 
       // Remove auth header
       delete axios.defaults.headers.common['Authorization'];

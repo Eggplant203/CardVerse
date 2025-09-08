@@ -1,3 +1,93 @@
+export const passwordChangedTemplate = (username: string) => `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Password Changed Successfully</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      background-color: #f9f9f9;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    .header {
+      text-align: center;
+      padding: 20px 0;
+    }
+    .header h1 {
+      color: #6366f1;
+      margin: 0;
+    }
+    .content {
+      padding: 20px 0;
+    }
+    .alert {
+      background-color: #fef3c7;
+      border: 1px solid #f59e0b;
+      border-radius: 4px;
+      padding: 12px;
+      margin: 20px 0;
+    }
+    .alert h3 {
+      color: #92400e;
+      margin: 0 0 8px 0;
+    }
+    .alert p {
+      color: #78350f;
+      margin: 0;
+    }
+    .footer {
+      text-align: center;
+      color: #666;
+      font-size: 12px;
+      margin-top: 30px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🃏 CardVerse</h1>
+    </div>
+    <div class="content">
+      <p>Hello ${username},</p>
+      <p>Your CardVerse account password has been successfully changed.</p>
+      
+      <div class="alert">
+        <h3>Security Notice</h3>
+        <p>If you did not make this change, please contact our support team immediately and consider changing your password again.</p>
+      </div>
+      
+      <p>For your security, we recommend:</p>
+      <ul>
+        <li>Using a strong, unique password</li>
+        <li>Regularly monitoring your account activity</li>
+      </ul>
+      
+      <p>If you have any questions or concerns, please don't hesitate to contact our support team by replying to this email.</p>
+      
+      <p>Thanks,<br>The CardVerse Team</p>
+    </div>
+    <div class="footer">
+      <p>© ${new Date().getFullYear()} EGGPLANT STUDIO. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>
+`;
+
 export const resetPasswordTemplate = (username: string, resetLink: string) => `
 <!DOCTYPE html>
 <html>
