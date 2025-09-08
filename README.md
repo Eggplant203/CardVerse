@@ -1,238 +1,155 @@
 # CardVerse - Transform Anything into Epic Cards 🃏
 
-## Project Overview
-
-CardVerse is a strategic PVP card game where players can transform any photo into unique, powerful cards. The game uses advanced AI to analyze each image and generate appropriate stats, effects, and lore-friendly descriptions, creating personalized cards that can be used in tactical battles.
+A strategic PVP card game where players transform photos into unique, powerful cards using AI. Features tactical 6-card battlefield gameplay, comprehensive effect system, and user authentication.
 
 ## ✨ Features
 
-- **🤖 AI-powered Card Generation**: Upload any photo and watch as our AI analyzes it to create a unique card with appropriate stats and abilities
-- **🎯 Strategic 6-card Battlefield**: Position cards on a 6-slot battlefield with front and back rows for tactical gameplay
-- **📚 Card Collection System**: Create, collect, and manage your custom cards with JSON export/import functionality
-- **⚔️ PVP Battles**: Challenge opponents in turn-based strategic combat
-- **✨ Dynamic Effects**: A comprehensive status effect system with buffs, debuffs, triggers, and persistent effects
-- **🏆 7 Rarity Levels**: From Common to Unique, each with distinct visual styling and power scaling
-- **🔮 7 Magical Elements**: Aurora, Void, Crystal, Blood, Storm, Flora, and Aether
-- **🔐 User Authentication**: Complete user registration, login, and profile management with NeonDB
-- **📧 Email Integration**: Gmail SMTP for password reset and account verification
-- **🎨 User-friendly Interface**: Beautiful and intuitive UI for easy navigation and gameplay
+- 🤖 **AI Card Generation**: Upload photos to create unique cards with AI-generated stats and abilities
+- 🎯 **Strategic Gameplay**: 6-card battlefield with front/back positioning
+- 📚 **Card Management**: Create, collect, and manage cards with JSON export/import
+- ⚔️ **PVP Battles**: Turn-based strategic combat system
+- ✨ **Dynamic Effects**: Buffs, debuffs, triggers, and persistent effects
+- 🏆 **7 Rarity Levels**: Common to Unique with distinct power scaling
+- 🔮 **7 Magical Elements**: Aurora, Void, Crystal, Blood, Storm, Flora, Aether
+- 🔐 **User Authentication**: Registration, login, profile management
+- 📧 **Email Integration**: Password reset and account verification
 
-## 🛠️ Technology Stack
+## 🛠️ Tech Stack
 
-- **Frontend**: React 18+ with TypeScript, Next.js 15 for routing and SSR
-- **UI/Styling**: Tailwind CSS for utility-based styling, Framer Motion for animations
-- **State Management**: React Context API with custom hooks
-- **Database**: Neon PostgreSQL with connection pooling
-- **Authentication**: JWT tokens with bcrypt password hashing
-- **Email Service**: Gmail SMTP with nodemailer
-- **AI Integration**: Gemini AI API for image analysis and content generation
-- **Storage**: Local storage for guest mode, database for authenticated users
-- **Deployment**: Netlify for hosting and CI/CD
+- **Frontend**: React 18 + TypeScript, Next.js 15
+- **UI**: Tailwind CSS, Framer Motion
+- **Database**: Neon PostgreSQL
+- **Auth**: JWT + bcrypt
+- **Email**: Gmail SMTP
+- **AI**: Google Gemini API
+- **Deployment**: Netlify
 
-## 🚀 Getting Started
+## 🚀 Quick Start
 
 ### Prerequisites
 
 - Node.js 18+
-- NPM or Yarn
 - PostgreSQL database (Neon recommended)
+- Gmail account
+- Google Gemini API key
 
 ### Installation
 
-1. Clone the repository:
+1. **Clone & Install:**
 
 ```bash
 git clone https://github.com/Eggplant203/CardVerse.git
 cd CardVerse
-```
-
-2. Install dependencies:
-
-```bash
 npm install
 ```
 
-3. Set up environment variables:
+2. **Environment Setup:**
 
 ```bash
 cp .env.local.example .env.local
 ```
 
-Edit `.env.local` with your configuration:
+Edit `.env.local` with your values:
 
 ```bash
-# Gemini API Key for image analysis
-NEXT_PUBLIC_GEMINI_API_KEY=your_gemini_api_key_here
-
-# Database Configuration
-DATABASE_URL=your_neon_database_url_here
-DIRECT_URL=your_neon_direct_url_here
-
-# JWT Settings
-JWT_SECRET=your_jwt_secret_here
-REFRESH_SECRET=your_refresh_secret_here
-
-# Email Settings
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
+NEXT_PUBLIC_GEMINI_API_KEY=your_gemini_api_key
+DATABASE_URL=your_neon_database_url
+DIRECT_URL=your_neon_direct_url
+JWT_SECRET=your_jwt_secret
+REFRESH_SECRET=your_refresh_secret
 EMAIL_USER=your_email@gmail.com
-EMAIL_PASS=your_app_password_here
-FROM_EMAIL=CardVerse Support <your_email@gmail.com>
-
-# Application URLs
+EMAIL_PASS=your_gmail_app_password
 NEXT_PUBLIC_BASE_URL=http://localhost:3000
 ```
 
-4. Run database migrations:
+3. **Database Setup:**
 
-```bash
-npm run migrate
-```
+   - Create Neon database at [neon.tech](https://neon.tech)
+   - Get connection strings and update `.env.local`
+   - Run migrations: `POST http://localhost:3000/api/migrate`
 
-5. Start the development server:
+4. **Start Development:**
 
 ```bash
 npm run dev
 ```
 
-6. Open [http://localhost:3000](http://localhost:3000) in your browser to see the game.
+Visit [http://localhost:3000](http://localhost:3000)
 
 ## 🎮 Game Mechanics
 
 ### Card Creation
 
-1. Upload any photo to the card creation page
-2. The AI will analyze the image and generate appropriate stats and abilities
-3. You can customize the card name and review the generated description
-4. Save the card to your collection
-5. Export cards as JSON files for backup or sharing
-6. Import cards from JSON files to restore or share collections
+1. Upload any photo
+2. AI analyzes image and generates stats/abilities
+3. Customize card name and review description
+4. Save to collection or export as JSON
 
 ### Gameplay
 
-1. Build a deck from your card collection
-2. Play cards strategically on the 6-slot battlefield (3 front, 3 back)
-3. Manage your mana resources to deploy powerful cards
-4. Use card abilities and positioning to outmaneuver your opponent
-5. Reduce your opponent's health to zero to win
+1. Build deck from card collection
+2. Position cards on 6-slot battlefield (3 front, 3 back)
+3. Manage mana and use card abilities
+4. Reduce opponent's health to zero to win
 
 ### Card Stats
 
-- **❤️ Health Points (HP)**: Card's survivability (1-100)
-- **⚡ Stamina**: Action points for abilities (1-50)
-- **🗡️ Attack Power**: Base damage output (1-50)
-- **🛡️ Defense**: Damage reduction capability (0-25)
-- **💨 Speed**: Turn order and initiative (1-20)
-- **🔮 Mana Cost**: Cost to summon the card (1-10)
-
-### Card Rarity Levels
-
-- **🟢 Common**: Basic cards with simple effects
-- **🔵 Uncommon**: Cards with 1-2 effects and minor secondary effects
-- **🟣 Rare**: Cards with 2 effects, possibly including passive or trigger effects
-- **🟠 Epic**: Cards with 2-3 effects combining active and passive mechanics
-- **🟡 Legendary**: Cards with 2-3 powerful effects with combined mechanics
-- **🌈 Mythic**: Cards with 2-3 unique effects that may change game rules
-- **💎 Unique**: Cards with 2-3 special effects with multiple layers of mechanics
-
-### Card Elements
-
-- **🌈 Aurora**: Mystical, rare effects
-- **⚫ Void**: Mysterious dark energy, weakening effects
-- **💎 Crystal**: Durable power, reflection
-- **🩸 Blood**: Sacrifice for power
-- **⚡ Storm**: Speed, chaos, explosive effects
-- **🌿 Flora**: Nature, healing, vitality
-- **🔮 Aether**: Ancient mystical energy, pure magic
+- ❤️ **HP**: Health points (1-100)
+- ⚡ **Stamina**: Action points (1-50)
+- 🗡️ **Attack**: Damage output (1-50)
+- 🛡️ **Defense**: Damage reduction (0-25)
+- 💨 **Speed**: Turn order (1-20)
+- 🔮 **Mana Cost**: Summon cost (1-10)
 
 ## 📁 Project Structure
 
 ```
 src/
-├── components/           # React UI components
-│   ├── auth/            # Authentication components
-│   ├── card/            # Card-related components
-│   ├── battlefield/     # Battlefield components
-│   ├── ui/              # Generic UI components
-│   └── layout/          # Layout components
-├── context/             # React Context providers
-├── data/                # Game data definitions
-│   ├── defaultCards/    # Default card templates
-│   ├── effects/         # Effect definitions
-│   ├── elements/        # Element definitions
-│   └── rarities/        # Rarity definitions
-├── hooks/               # Custom React hooks
-├── lib/                 # Core libraries
-│   ├── auth/           # Authentication utilities
-│   ├── database/       # Database queries and connections
-│   └── email/          # Email services
-├── pages/               # Next.js pages and API routes
-│   ├── api/            # API endpoints
-│   └── [page].tsx      # Page components
-├── services/            # Core services
-│   ├── ai/             # AI image analysis and card generation
-│   ├── api/            # API interaction services
-│   ├── game/           # Game mechanics and logic
-│   └── storage/        # Storage management
-├── types/               # TypeScript type definitions
-└── utils/               # Utility functions
+├── components/     # React components
+├── context/        # React Context providers
+├── data/          # Game data & configurations
+├── hooks/         # Custom React hooks
+├── lib/           # Core libraries & utilities
+├── pages/         # Next.js pages & API routes
+├── services/      # Business logic services
+├── types/         # TypeScript definitions
+└── utils/         # Helper functions
 ```
 
-## 🤖 AI Integration
+## 🚀 Deployment
 
-This game uses the Gemini AI API to analyze images and generate appropriate card stats and descriptions. The API examines the content, colors, mood, and complexity of uploaded images to create cards that match the visual content.
+### Netlify Setup
 
-## 🚀 Deployment on Netlify
+1. Connect GitHub repository to Netlify
+2. Set build settings:
 
-### Environment Variables for Netlify
+   - Build command: `npm run build`
+   - Publish directory: `.next`
+   - Node version: `18`
 
-Add these variables in **Netlify Dashboard > Site Settings > Environment Variables**:
+3. Add environment variables in Netlify dashboard (same as `.env.local`)
+
+4. Deploy and run migrations on production
+
+## 🔧 Scripts
 
 ```bash
-# Required Variables
-NEXT_PUBLIC_GEMINI_API_KEY=your_gemini_api_key
-DATABASE_URL=your_production_database_url
-DIRECT_URL=your_production_direct_url
-JWT_SECRET=your_production_jwt_secret
-REFRESH_SECRET=your_production_refresh_secret
-EMAIL_USER=your_email@gmail.com
-EMAIL_PASS=your_gmail_app_password
-
-# Optional Variables
-JWT_EXPIRY=15m
-REFRESH_EXPIRY=7d
-NODE_ENV=production
+npm run dev      # Start development server
+npm run build    # Build for production
+npm run start    # Start production server
+npm run lint     # Run ESLint
 ```
 
-### Build Settings
+## 📋 Requirements
 
-```bash
-Build Command: npm run build
-Publish Directory: .next
-Node Version: 18
-```
-
-## 🔄 Future Enhancements
-
-- ✅ **JSON Export/Import**: Cards can be exported and imported as JSON files
-- ✅ **Enhanced AI Analysis**: Improved color detection and card generation
-- ✅ **7 Rarity Levels**: Complete rarity system from Common to Unique
-- ✅ **7 Magical Elements**: Full elemental system with unique effects
-- 🔄 Online multiplayer capabilities
-- 🔄 Advanced AI opponents with different difficulty levels
-- 🔄 Card trading system
-- 🔄 Expanded card effects and abilities
-- 🔄 Mobile application version
+- **Node.js**: 18+
+- **Database**: PostgreSQL (Neon recommended)
+- **Email**: Gmail with App Password
+- **AI**: Google Gemini API key
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🙏 Acknowledgments
-
-- This project was created for educational purposes
-- Special thanks to the Gemini AI team for providing the AI capabilities
-- Icons and emojis from various open source projects
+MIT License - see LICENSE file for details.
 
 ## 👨‍💻 Author
 
@@ -240,4 +157,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ---
 
-**🎮 Ready to create your epic cards? Start by uploading any photo and let the AI transform it into a powerful card!**
+**🎮 Ready to create epic cards? Upload any photo and let AI transform it into a powerful card!**
