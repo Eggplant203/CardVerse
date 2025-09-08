@@ -1,5 +1,5 @@
 import { CardInstance } from '@/types/game';
-import { Effect, EffectType, TargetType } from '@/types/card';
+import { Effect, EffectType } from '@/types/card';
 
 /**
  * Handles the application and resolution of card effects
@@ -69,7 +69,7 @@ export class EffectProcessor {
         break;
         
       case 'utility':
-        this.applyUtilityEffect(effect, source, target);
+        this.applyUtilityEffect(effect);
         break;
     }
     
@@ -169,7 +169,7 @@ export class EffectProcessor {
   /**
    * Apply utility effects
    */
-  private static applyUtilityEffect(effect: Effect, source: CardInstance, target: CardInstance): void {
+  private static applyUtilityEffect(effect: Effect): void {
     // Implement specific utility effects
     if (effect.description.toLowerCase().includes('draw')) {
       // Card draw logic would be implemented elsewhere

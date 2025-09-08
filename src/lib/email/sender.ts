@@ -46,7 +46,7 @@ export async function sendPasswordResetEmail(
   };
 
   try {
-    const info = await transporter.sendMail(mailOptions);
+    await transporter.sendMail(mailOptions);
   } catch (error) {
     console.error('Error sending password reset email:', error);
     throw new Error('Failed to send password reset email');
@@ -79,7 +79,7 @@ export async function sendWelcomeEmail(
   };
 
   try {
-    const info = await transporter.sendMail(mailOptions);
+    await transporter.sendMail(mailOptions);
   } catch (error) {
     console.error('Error sending welcome email:', error);
     throw error;

@@ -91,7 +91,12 @@ export interface GameState {
 
 export interface GameAction {
   type: string;
-  payload: any;
+  payload: unknown;
+}
+
+export interface GameActionResult {
+  type: string;
+  description: string;
 }
 
 export type GameDispatch = (action: GameAction) => void;

@@ -16,6 +16,8 @@ export interface CardGenerationRequest {
   customName?: string;
 }
 
+
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface CardGenerationResponse extends ApiResponse<Card> {}
 
 export interface GameSessionRequest {
@@ -23,6 +25,7 @@ export interface GameSessionRequest {
   deckIds: [string, string];
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface GameSessionResponse extends ApiResponse<{
   gameId: string;
   sessionUrl: string;

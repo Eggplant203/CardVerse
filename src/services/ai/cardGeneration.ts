@@ -1,4 +1,4 @@
-import { Card, CardType, Element, Rarity, EffectType } from '@/types/card';
+import { Card, CardType, Element, Rarity, EffectType, EffectCategory, TargetType } from '@/types/card';
 import { AIAnalysisResult } from '@/types/api';
 import { v4 as uuidv4 } from 'uuid';
 import { BUFF_EFFECTS } from '@/data/effects/buffs';
@@ -113,12 +113,11 @@ export function generateCard(
           effectName.length > 25) {
         
         // Try to extract a meaningful name from description
-        const words = suggestion.description.split(' ');
         const keyTerms = ['damage', 'heal', 'buff', 'debuff', 'boost', 'stun', 'freeze', 
                          'attack', 'defend', 'protect', 'shield', 'summon', 'banish'];
                          
         // Find a key term in the description to use as part of the name
-        let keyTerm = keyTerms.find(term => suggestion.description.toLowerCase().includes(term));
+        const keyTerm = keyTerms.find(term => suggestion.description.toLowerCase().includes(term));
         
         // Create a more appropriate name
         if (keyTerm) {
@@ -134,10 +133,10 @@ export function generateCard(
         id: suggestion.id || uuidv4(),
         name: effectName,
         type: suggestion.effectType.toUpperCase() as EffectType,
-        category: suggestion.effectCategory.toUpperCase() as any,
+        category: suggestion.effectCategory.toUpperCase() as EffectCategory,
         duration: Math.floor(Math.random() * 3) + 1,  // Random duration between 1-3
         magnitude: Math.floor(Math.random() * 5) + 1, // Random magnitude between 1-5
-        target: suggestion.targetType.toUpperCase() as any,
+        target: suggestion.targetType.toUpperCase() as TargetType,
         condition: "none",
         description: suggestion.description
       };

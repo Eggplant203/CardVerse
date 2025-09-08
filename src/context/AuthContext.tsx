@@ -1,5 +1,5 @@
-import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
-import axios from 'axios';
+import React, { createContext, useState, useEffect, useContext, useCallback, ReactNode } from 'react';
+import axios, { AxiosRequestConfig } from 'axios';
 import {
   UserProfile,
   LoginCredentials,
@@ -21,12 +21,58 @@ const GUEST_DECKS_KEY = 'cardverse_guest_decks';
 const USER_CARDS_KEY = 'ai_card_game_cards';
 const USER_DECKS_KEY = 'ai_card_game_decks';
 
+// Notification permission state
+let notificationPermission: NotificationPermission = 'default';
+
 // Provider component
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isGuestMode, setIsGuestMode] = useState(false);
+
+  // Request notification permission
+  const requestNotificationPermission = async (): Promise<void> => {
+    if ('Notification' in window) {
+      try {
+        const permission = await Notification.requestPermission();
+        notificationPermission = permission;
+        console.log('🔔 Notification permission:', permission);
+      } catch (error) {
+        console.error('❌ Error requesting notification permission:', error);
+      }
+    } else {
+      console.log('🔔 Notifications not supported in this browser');
+    }
+  };
+
+  // Show browser notification
+  const showNotification = (title: string, body: string, icon?: string): void => {
+    if (notificationPermission === 'granted' && 'Notification' in window) {
+      try {
+        const notification = new Notification(title, {
+          body,
+          icon: icon || '/favicon-32x32.svg',
+          tag: 'cardverse-auth', // Group similar notifications
+          requireInteraction: false
+        });
+
+        // Auto-close after 5 seconds
+        setTimeout(() => {
+          notification.close();
+        }, 5000);
+
+        console.log('🔔 Notification shown:', title);
+      } catch (error) {
+        console.error('❌ Error showing notification:', error);
+      }
+    }
+  };
+
+  // Request notification permission on mount
+  useEffect(() => {
+    requestNotificationPermission();
+  }, []);
 
   // Sync user data from database
   const syncUserDataFromDatabase = async (): Promise<void> => {
@@ -81,12 +127,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       } else {
         console.log('No guest data to transfer');
       }
-    } catch (error: any) {
-      console.error('Error transferring guest data:', error);
+    } catch (error: unknown) {
+      const err = error as { message?: string; response?: { status?: number; data?: unknown } };
+      console.error('Error transferring guest data:', err);
       console.error('Error details:', {
-        message: error.message,
-        status: error.response?.status,
-        data: error.response?.data
+        message: err.message,
+        status: err.response?.status,
+        data: err.response?.data
       });
       // Don't throw error to prevent registration from failing
     }
@@ -94,9 +141,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   // Initialize auth state from local storage
   useEffect(() => {
-    const loadStoredUser = () => {
+    const loadStoredUser = async () => {
       try {
         const storedToken = localStorage.getItem(ACCESS_TOKEN_KEY);
+        const storedRefreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
         const storedUser = localStorage.getItem(USER_KEY);
         const storedGuestMode = localStorage.getItem(GUEST_MODE_KEY);
 
@@ -105,15 +153,48 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           setIsGuestMode(true);
           setIsAuthenticated(false);
           setUser(null);
-        } else if (storedToken && storedUser) {
-          // Authenticated user
-          const userData = JSON.parse(storedUser) as UserProfile;
-          setUser(userData);
-          setIsAuthenticated(true);
-          setIsGuestMode(false);
+        } else if (storedToken && storedUser && storedRefreshToken) {
+          // Authenticated user - verify tokens are still valid
+          try {
+            // Try to refresh token to ensure it's still valid
+            const refreshResponse = await axios.post('/api/auth/refresh', {
+              refreshToken: storedRefreshToken
+            });
 
-          // Set auth header for all future requests
-          axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
+            if (refreshResponse.data.success) {
+              const { accessToken, refreshToken: newRefreshToken } = refreshResponse.data;
+
+              // Store new tokens
+              localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
+              localStorage.setItem(REFRESH_TOKEN_KEY, newRefreshToken);
+
+              // Set auth header with new token
+              axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+
+              // Load user data
+              const userData = JSON.parse(storedUser) as UserProfile;
+              setUser(userData);
+              setIsAuthenticated(true);
+              setIsGuestMode(false);
+
+              console.log('✅ Token refreshed successfully on app load');
+            } else {
+              throw new Error('Token refresh failed');
+            }
+          } catch (refreshError) {
+            console.log('❌ Token refresh failed on app load, clearing stored data:', refreshError);
+            // Clear invalid tokens
+            localStorage.removeItem(ACCESS_TOKEN_KEY);
+            localStorage.removeItem(REFRESH_TOKEN_KEY);
+            localStorage.removeItem(USER_KEY);
+            localStorage.removeItem(USER_CARDS_KEY);
+            localStorage.removeItem(USER_DECKS_KEY);
+
+            // Default to guest mode
+            setIsGuestMode(true);
+            setIsAuthenticated(false);
+            setUser(null);
+          }
         } else {
           // No stored data, default to guest mode
           // Clear any existing user data
@@ -151,7 +232,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const register = async (data: RegisterData): Promise<void> => {
     setIsLoading(true);
     try {
-      const response = await axios.post('/api/auth/register', data, { skipAuthRefresh: true } as any);
+      const response = await axios.post('/api/auth/register', data, { skipAuthRefresh: true } as AxiosRequestConfig & { skipAuthRefresh: boolean });
 
       if (response.data.success) {
         // Check if we were in guest mode before login
@@ -185,7 +266,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const login = async (credentials: LoginCredentials): Promise<void> => {
     setIsLoading(true);
     try {
-      const response = await axios.post('/api/auth/login', credentials, { skipAuthRefresh: true } as any);
+      const response = await axios.post('/api/auth/login', credentials, { skipAuthRefresh: true } as AxiosRequestConfig & { skipAuthRefresh: boolean });
 
       if (response.data.success) {
         const { accessToken, refreshToken, user } = response.data;
@@ -205,6 +286,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         // Clear guest mode flag
         localStorage.removeItem(GUEST_MODE_KEY);
 
+        // Show success notification
+        showNotification(
+          'Welcome Back!',
+          `Welcome back, ${user.username}! You are now logged in.`,
+          '/favicon-32x32.svg'
+        );
+
         // Sync data from database (this will overwrite local guest data)
         await syncUserDataFromDatabase();
       } else {
@@ -219,7 +307,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   // Logout a user
-  const logout = async (): Promise<void> => {
+  const logout = useCallback(async (): Promise<void> => {
     setIsLoading(true);
     try {
       // Call logout API if authenticated
@@ -248,19 +336,28 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       // Set guest mode flag
       localStorage.setItem(GUEST_MODE_KEY, 'true');
 
+      // Show logout notification
+      showNotification(
+        'Logged Out',
+        'You have been logged out and switched to guest mode.',
+        '/favicon-32x32.svg'
+      );
+
       setIsLoading(false);
     }
-  };
+  }, [isAuthenticated]);
 
   // Refresh the access token
-  const refreshToken = async (): Promise<void> => {
+  const refreshToken = useCallback(async (): Promise<void> => {
     try {
       const storedRefreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
 
       if (!storedRefreshToken) {
+        console.log('❌ No refresh token available in localStorage');
         throw new Error('No refresh token available');
       }
 
+      console.log('🔄 Refreshing token...');
       const response = await axios.post('/api/auth/refresh', {
         refreshToken: storedRefreshToken
       });
@@ -275,17 +372,35 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         // Update auth header
         axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
 
+        console.log('✅ Token refreshed successfully');
+
+        // Show success notification
+        showNotification(
+          'Session Extended',
+          'Your session has been automatically renewed. You can continue playing!',
+          '/favicon-32x32.svg'
+        );
+
         return;
       }
 
+      console.log('❌ Token refresh failed - no success in response');
       throw new Error('Failed to refresh token');
     } catch (error) {
       console.error('❌ Token refresh error:', error);
+
+      // Show failure notification
+      showNotification(
+        'Session Expired',
+        'Your session has expired. You have been switched to guest mode.',
+        '/favicon-32x32.svg'
+      );
+
       // If refresh fails, logout
       await logout();
       throw error;
     }
-  };
+  }, [logout]);
 
   // Update user profile
   const updateProfile = async (data: ProfileUpdate): Promise<void> => {
@@ -334,12 +449,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         ) {
           originalRequest._retry = true;
 
+          console.log('🔄 Token expired, attempting refresh for:', originalRequest.url);
+
           try {
             await refreshToken();
+            console.log('✅ Token refreshed successfully, retrying request');
             // Retry the original request
             return axios(originalRequest);
           } catch (refreshError) {
-            // If refresh fails, pass through the original error
+            console.log('❌ Token refresh failed, logging out user:', refreshError);
+            // If refresh fails, logout
+            await logout();
             return Promise.reject(error);
           }
         }
@@ -352,7 +472,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       // Clean up interceptor on unmount
       axios.interceptors.response.eject(interceptor);
     };
-  }, []);
+  }, [logout, refreshToken]);
 
   const contextValue: AuthContextValue = {
     user,

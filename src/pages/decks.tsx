@@ -1,12 +1,13 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NextPage } from 'next';
-import { motion, AnimatePresence } from 'framer-motion';
+import Image from 'next/image';
+import { motion } from 'framer-motion';
 import Header from '@/components/layout/Header';
 import Card from '@/components/card/Card';
 import Button from '@/components/ui/Button';
 import { Card as CardType } from '@/types/card';
 import { CardAPI } from '@/services/api/cardAPI';
-import AuthContext, { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/context/AuthContext';
 
 interface Deck {
   id: string;
@@ -225,9 +226,11 @@ const Decks: NextPage = () => {
                 >
                   <div className="deck-cover h-40 bg-gray-700 flex items-center justify-center overflow-hidden">
                     {deck.coverCard ? (
-                      <img 
+                      <Image 
                         src={deck.coverCard.imageUrl || '/default-card.jpg'} 
                         alt={deck.name}
+                        width={200}
+                        height={160}
                         className="w-full h-full object-cover" 
                       />
                     ) : (
@@ -257,7 +260,7 @@ const Decks: NextPage = () => {
               
               {decks.length === 0 && (
                 <div className="col-span-full text-center py-12">
-                  <p className="text-gray-400 mb-6">You don't have any decks yet</p>
+                  <p className="text-gray-400 mb-6">You don&apos;t have any decks yet</p>
                   <Button onClick={handleCreateDeck} variant="primary" size="lg">
                     Create Your First Deck
                   </Button>

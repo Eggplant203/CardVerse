@@ -1,13 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { NextPage } from 'next';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import Header from '@/components/layout/Header';
 import Battlefield from '@/components/battlefield/Battlefield';
 import PlayerHand from '@/components/battlefield/PlayerHand';
 import Button from '@/components/ui/Button';
 import * as battleEngine from '@/services/game/battleEngine';
-import { Card } from '@/types/card';
-import { GamePhase, Player, GameState, CardInstance } from '@/types/game';
+import { GamePhase, Player, GameState, CardInstance, GameActionResult } from '@/types/game';
 
 const Battle: NextPage = () => {
   const [gameState, setGameState] = useState<GameState | null>(null);
@@ -17,6 +16,10 @@ const Battle: NextPage = () => {
   const [turnTimer, setTurnTimer] = useState<number>(30);
   const [validTargets, setValidTargets] = useState<string[]>([]);
   const [gameLog, setGameLog] = useState<string[]>([]);
+
+  const addToGameLog = useCallback((message: string) => {
+    setGameLog((prev: string[]) => [...prev, message]);
+  }, []);
 
   // Initialize game on component mount
   useEffect(() => {
@@ -32,29 +35,7 @@ const Battle: NextPage = () => {
     };
 
     initGame();
-  }, []);
-
-  // Turn timer
-  useEffect(() => {
-    if (!activeTurn || !gameState || gameState.currentPhase === GamePhase.SETUP || gameState.currentPhase === GamePhase.END) return;
-
-    const timer = setInterval(() => {
-      setTurnTimer((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          handleEndTurn();
-          return 30;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [activeTurn, gameState?.currentPhase]);
-
-  const addToGameLog = (message: string) => {
-    setGameLog((prev: string[]) => [...prev, message]);
-  };
+  }, [addToGameLog]);
 
   const handleCardPlay = (cardInstance: CardInstance) => {
     setSelectedCardInstance(cardInstance);
@@ -82,7 +63,7 @@ const Battle: NextPage = () => {
     }
   };
 
-  const handleEndTurn = async () => {
+  const handleEndTurn = useCallback(async () => {
     if (!gameState) return;
     
     addToGameLog('Ending turn...');
@@ -96,7 +77,7 @@ const Battle: NextPage = () => {
         setGameState(result.newState);
         
         // Add AI actions to game log
-        result.actions.forEach((action: any) => {
+        result.actions.forEach((action: GameActionResult) => {
           addToGameLog(`Opponent ${action.type}: ${action.description}`);
         });
         
@@ -108,7 +89,25 @@ const Battle: NextPage = () => {
         console.error('Error processing opponent turn:', err);
       }
     }, 2000);
-  };
+  }, [gameState, addToGameLog]);
+
+  // Turn timer
+  useEffect(() => {
+    if (!activeTurn || !gameState || gameState.currentPhase === GamePhase.SETUP || gameState.currentPhase === GamePhase.END) return;
+
+    const timer = setInterval(() => {
+      setTurnTimer((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          handleEndTurn();
+          return 30;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [activeTurn, gameState, handleEndTurn, addToGameLog]);
 
   // If game hasn't been initialized yet
   if (!gameState) {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NextPage } from 'next';
 import { motion, AnimatePresence } from 'framer-motion';
 import Header from '@/components/layout/Header';
@@ -7,7 +7,7 @@ import Button from '@/components/ui/Button';
 import { Card as CardType, Rarity, Element } from '@/types/card';
 import { CardAPI } from '@/services/api/cardAPI';
 import { formatEffectDescription } from '@/utils/cardUtils';
-import AuthContext, { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/context/AuthContext';
 
 // Function to get rarity text color
 function getRarityTextColor(rarity: string): string {

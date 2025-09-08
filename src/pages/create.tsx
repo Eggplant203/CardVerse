@@ -1,15 +1,17 @@
-import React, { useState, useCallback, useRef, useContext } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { NextPage } from 'next';
+import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { useDropzone } from 'react-dropzone';
 import Header from '@/components/layout/Header';
 import Button from '@/components/ui/Button';
-import { Rarity, Element, CardType, Card } from '@/types/card';
+import { Rarity, Card } from '@/types/card';
 import { analyzeImage } from '@/services/ai/imageAnalysis';
 import { generateCardFromAnalysis } from '@/services/ai/cardGeneration';
 import { ImageStorage } from '@/services/storage/imageStorage';
 import { formatEffectDescription } from '@/utils/cardUtils';
-import AuthContext, { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/context/AuthContext';
 import { CardAPI } from '@/services/api/cardAPI';
 
 // Function to get color class based on card rarity
@@ -191,12 +193,12 @@ const CreateCard: NextPage = () => {
         setAnalysisProgress(0);
       }, 500);
       
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error in handleAnalyzeImage:', err);
       
       // Show a more specific error message if available
-      const errorMessage = err.message 
-        ? `Error analyzing image: ${err.message}` 
+      const errorMessage = (err as Error).message
+        ? `Error analyzing image: ${(err as Error).message}`
         : 'Error analyzing image. Please try again.';
       
       setError(errorMessage);
@@ -312,9 +314,11 @@ const CreateCard: NextPage = () => {
               
               {uploadedImage ? (
                 <div className="relative">
-                  <img 
+                  <Image 
                     src={uploadedImage} 
                     alt="Preview" 
+                    width={256}
+                    height={256}
                     className="mx-auto max-h-64 rounded" 
                   />
                   <p className="mt-2 text-gray-400">Click or drag to replace</p>
@@ -407,9 +411,11 @@ const CreateCard: NextPage = () => {
                     ${generatedCard.element === 'aether' ? 'border-indigo-600' : ''}
                   `}>
                     {uploadedImage && (
-                      <img 
+                      <Image 
                         src={uploadedImage} 
                         alt="Card" 
+                        width={200}
+                        height={150}
                         className="w-full h-1/2 object-cover" 
                       />
                     )}
@@ -488,9 +494,10 @@ const CreateCard: NextPage = () => {
                         
                         {uploadedImage && (
                           <div className="mb-4 relative h-32 w-full">
-                            <img 
+                            <Image 
                               src={uploadedImage} 
                               alt="Card" 
+                              fill
                               className="absolute w-full h-full object-contain" 
                             />
                           </div>
@@ -620,20 +627,20 @@ const CreateCard: NextPage = () => {
                   
                   {/* Status Message with Link to Cards Page */}
                   {saveStatus && (
-                    <a 
+                    <Link 
                       href="/cards" 
                       className={`mt-4 p-2 rounded text-white block hover:brightness-110 transition-all ${
                         saveStatus.type === 'success' ? 'bg-green-600' : 'bg-red-600'
                       }`}
                     >
                       {saveStatus.message}
-                    </a>
+                    </Link>
                   )}
                 </div>
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center h-96 text-center text-gray-400">
-                <p>Upload an image and click "Analyze Image" to generate your custom card</p>
+                <p>Upload an image and click &quot;Analyze Image&quot; to generate your custom card</p>
                 <p className="mt-4 text-sm">
                   The AI will analyze the content of your image to create appropriate stats and abilities
                 </p>

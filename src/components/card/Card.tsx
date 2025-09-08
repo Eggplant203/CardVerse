@@ -26,17 +26,6 @@ const Card: React.FC<CardProps> = ({
     lg: 'w-56 h-76',
   };
 
-  // Define rarity border colors
-  const rarityColors = {
-    [Rarity.COMMON]: 'card-common',
-    [Rarity.UNCOMMON]: 'card-uncommon',
-    [Rarity.RARE]: 'card-rare',
-    [Rarity.EPIC]: 'card-epic',
-    [Rarity.LEGENDARY]: 'card-legendary',
-    [Rarity.MYTHIC]: 'card-mythic',
-    [Rarity.UNIQUE]: 'card-unique',
-  };
-  
   // Define rarity text colors
   const rarityTextColors = {
     [Rarity.COMMON]: 'text-gray-300',

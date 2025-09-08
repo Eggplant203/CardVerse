@@ -312,3 +312,28 @@ export async function updateUserVerificationStatus(userId: string, isVerified: b
     [userId, isVerified]
   );
 }
+
+/**
+ * Find a user by ID with password hash (for password verification)
+ */
+export async function findUserByIdWithPassword(id: string): Promise<{
+  id: string;
+  email: string;
+  username: string;
+  displayName: string;
+  avatarUrl: string | null;
+  passwordHash: string;
+  createdAt: string;
+  lastLogin?: string;
+} | null> {
+  const result = await pool.query(
+    `SELECT id, email, username, display_name as "displayName", 
+     avatar_url as "avatarUrl", password_hash as "passwordHash",
+     created_at as "createdAt", last_login as "lastLogin"
+     FROM users
+     WHERE id = $1`,
+    [id]
+  );
+  
+  return result.rows[0] || null;
+}

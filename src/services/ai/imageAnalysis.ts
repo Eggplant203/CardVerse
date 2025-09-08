@@ -6,16 +6,16 @@ import { generateImageAnalysisPrompt } from '@/services/ai/descriptionGenerator'
 /**
  * Normalizes the analysis response to ensure consistent format
  */
-function normalizeAnalysisResponse(response: any): AIAnalysisResult {
+function normalizeAnalysisResponse(response: AIAnalysisResult | Record<string, unknown>): AIAnalysisResult {
   // Make a copy to avoid modifying the original
-  const result = { ...response };
+  const result = { ...(response as AIAnalysisResult) };
   
   // Normalize objectsDetected to ensure we have a proper main subject name
   if (!result.objectsDetected || !Array.isArray(result.objectsDetected) || result.objectsDetected.length === 0) {
     result.objectsDetected = ["Mysterious Entity"];
   } else {
     // Make sure objectsDetected items are full strings, not just single characters
-    result.objectsDetected = result.objectsDetected.map((item: any) => {
+    result.objectsDetected = result.objectsDetected.map((item: string | unknown) => {
       if (typeof item === 'string') {
         if (item.length <= 1) {
           console.warn(`Found suspicious short name in objectsDetected: "${item}"`);
@@ -29,6 +29,7 @@ function normalizeAnalysisResponse(response: any): AIAnalysisResult {
   
   // Handle suggestedEffects that might be strings or objects with wrong format
   if (result.suggestedEffects) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     result.suggestedEffects = result.suggestedEffects.map((effect: any) => {
       // If effect is a string, convert to proper format
       if (typeof effect === 'string') {
@@ -42,7 +43,6 @@ function normalizeAnalysisResponse(response: any): AIAnalysisResult {
         };
       }
       
-      // If effect is missing id, name or description, fix it
       const normalizedEffect = { ...effect };
       
       if (!normalizedEffect.id) {
@@ -86,7 +86,7 @@ function normalizeAnalysisResponse(response: any): AIAnalysisResult {
   if (!result.dominantColors || !Array.isArray(result.dominantColors)) {
     result.dominantColors = ['#888888']; // Default gray color
   } else {
-    result.dominantColors = result.dominantColors.map((color: any) => {
+    result.dominantColors = result.dominantColors.map((color: string | unknown) => {
       if (typeof color === 'string') {
         // Check if it's already a valid hex color
         if (/^#[0-9A-Fa-f]{6}$/.test(color)) {
@@ -185,7 +185,7 @@ export async function analyzeImage(imageBase64: string): Promise<AIAnalysisResul
       try {
         const errorJson = await response.json();
         errorDetail = JSON.stringify(errorJson);
-      } catch (e) {
+      } catch {
         // If we can't parse the response as JSON, just use the status text
         errorDetail = response.statusText;
       }
@@ -204,7 +204,7 @@ export async function analyzeImage(imageBase64: string): Promise<AIAnalysisResul
     }
     
     // Parse the AI response
-    const textContent = data.candidates[0].content.parts.find((part: any) => part.text)?.text;
+    const textContent = data.candidates[0].content.parts.find((part: { text?: string } | unknown) => (part as { text?: string }).text)?.text;
     
     if (!textContent) {
       console.error('No text content found in API response');

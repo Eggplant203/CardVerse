@@ -136,7 +136,7 @@ const Battlefield: React.FC<BattlefieldProps> = ({
         <div className="turn-indicator text-lg font-title">
           {isPlayerTurn ? 
             <span className="text-green-400">Your Turn</span> : 
-            <span className="text-red-400">Opponent's Turn</span>
+            <span className="text-red-400">Opponent&apos;s Turn</span>
           }
         </div>
       </div>

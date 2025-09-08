@@ -52,7 +52,7 @@ export function verifyAccessToken(token: string): JWTPayload | null {
   try {
     const decoded = jwt.verify(token, TOKEN_CONFIG.JWT_SECRET) as JWTPayload;
     return decoded;
-  } catch (error) {
+  } catch {
     return null;
   }
 }
@@ -64,7 +64,7 @@ export function verifyRefreshToken(token: string): RefreshTokenPayload | null {
   try {
     const decoded = jwt.verify(token, TOKEN_CONFIG.REFRESH_SECRET) as RefreshTokenPayload;
     return decoded;
-  } catch (error) {
+  } catch {
     return null;
   }
 }

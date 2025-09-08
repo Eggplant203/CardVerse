@@ -1,6 +1,5 @@
 // Player types and interfaces
 import { Card } from './card';
-import { CardInstance } from './game';
 
 export interface PlayerStats {
   wins: number;

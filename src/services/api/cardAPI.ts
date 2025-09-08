@@ -1,6 +1,7 @@
 import { Card } from '@/types/card';
 import { ApiResponse, CardGenerationRequest } from '@/types/api';
 import { saveCard, deleteCard, getAllCards } from '../storage/cardStorage';
+import axios from 'axios';
 
 // Simulate API endpoints (in a real app, these would call actual server endpoints)
 const API_URL = '/api';
@@ -60,29 +61,26 @@ export class CardAPI {
       console.log('Getting cards from database for authenticated user');
       const token = localStorage.getItem('cardverse_access_token');
       console.log('Access token exists for getUserCards:', !!token);
+      console.log('Token length:', token?.length || 0);
 
-      // Get from database for authenticated users
-      const response = await fetch(`${API_URL}/cards`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+      // Get from database for authenticated users using axios (to benefit from interceptors)
+      console.log('Making API call to /api/cards...');
+      const response = await axios.get(`${API_URL}/cards`);
 
       console.log('Get cards API response status:', response.status);
+      console.log('Get cards API response success:', response.data.success);
+      console.log('Cards returned count:', response.data.data ? response.data.data.length : 0);
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Get cards API error:', errorText);
-        throw new Error(`API request failed with status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      console.log('Get cards API response:', result);
-      console.log('Cards returned count:', result.data ? result.data.length : 0);
-
-      return result;
-    } catch (error) {
-      console.error('Error fetching user cards:', error);
+      return response.data;
+    } catch (error: unknown) {
+      console.error('❌ Error fetching user cards:', error);
+      const err = error as { message?: string; response?: { status?: number; statusText?: string; data?: unknown } };
+      console.error('Error details:', {
+        message: err.message,
+        status: err.response?.status,
+        statusText: err.response?.statusText,
+        data: err.response?.data
+      });
       return {
         success: false,
         error: {

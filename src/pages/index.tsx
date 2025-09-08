@@ -1,6 +1,7 @@
 import React from 'react';
 import { NextPage } from 'next';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import Header from '@/components/layout/Header';
 import Button from '@/components/ui/Button';
@@ -44,10 +45,10 @@ const Home: NextPage = () => {
           >
             <div className="card-preview relative w-64 h-96">
               <div className="absolute top-0 left-0 w-64 h-96 transform rotate-[-15deg] translate-x-[-140px] translate-y-[20px]">
-                <img src="/card-example-1.jpg" alt="Example Card" className="rounded-lg shadow-xl" />
+                <Image src="/card-example-1.jpg" alt="Example Card" width={256} height={384} className="rounded-lg shadow-xl" />
               </div>
               <div className="absolute top-0 left-0 w-64 h-96 transform rotate-[5deg] translate-x-[-80px] translate-y-[-10px]">
-                <img src="/card-example-2.jpg" alt="Example Card" className="rounded-lg shadow-xl" />
+                <Image src="/card-example-2.jpg" alt="Example Card" width={256} height={384} className="rounded-lg shadow-xl" />
               </div>
             </div>
           </motion.div>

@@ -135,7 +135,7 @@ export class GameAPI {
   /**
    * Get user's game history
    */
-  public static async getUserGameHistory(userId: string): Promise<ApiResponse<any[]>> {
+  public static async getUserGameHistory(userId: string): Promise<ApiResponse<unknown[]>> {
     try {
       const response = await fetch(`${API_URL}/games/history/${userId}`);
 

@@ -13,7 +13,6 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({
   const [emailSent, setEmailSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [cooldownTime, setCooldownTime] = useState(0);
-  const [cooldownMinutes, setCooldownMinutes] = useState(0);
 
   // Countdown timer effect
   useEffect(() => {
@@ -43,21 +42,20 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({
       
       if (response.data.success) {
         setEmailSent(true);
-        setCooldownMinutes(response.data.cooldownMinutes || 5);
         setCooldownTime((response.data.cooldownMinutes || 5) * 60); // Convert to seconds
       } else {
         throw new Error(response.data.error?.message || 'Failed to send reset email');
       }
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.error?.message || 'Failed to send reset email. Please try again.';
-      const errorCode = err.response?.data?.error?.code;
-      const cooldownMins = err.response?.data?.error?.cooldownMinutes;
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { error?: { message?: string; code?: string; cooldownMinutes?: number } } } };
+      const errorMessage = error.response?.data?.error?.message || 'Failed to send reset email. Please try again.';
+      const errorCode = error.response?.data?.error?.code;
+      const cooldownMins = error.response?.data?.error?.cooldownMinutes;
       
       setError(errorMessage);
       
       // If cooldown is active, set the countdown timer
       if (errorCode === 'COOLDOWN_ACTIVE' && cooldownMins) {
-        setCooldownMinutes(cooldownMins);
         setCooldownTime(cooldownMins * 60);
       }
     } finally {

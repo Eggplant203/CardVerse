@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
 import axios from 'axios';
 import { calculatePasswordStrength } from '../../lib/auth/password';
 
@@ -12,7 +11,6 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({
   token,
   onSuccess
 }) => {
-  const router = useRouter();
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -72,8 +70,9 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({
       } else {
         throw new Error(response.data.error?.message || 'Failed to reset password');
       }
-    } catch (err: any) {
-      setError(err.response?.data?.error?.message || 'Failed to reset password. Please try again.');
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { error?: { message?: string } } } };
+      setError(error.response?.data?.error?.message || 'Failed to reset password. Please try again.');
     } finally {
       setIsLoading(false);
     }

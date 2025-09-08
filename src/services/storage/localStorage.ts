@@ -24,9 +24,9 @@ export async function getCardCollection(isGuest: boolean = false): Promise<Card[
     const cards = JSON.parse(cardsJson);
     
     // Convert createdAt strings back to Date objects
-    return cards.map((card: any) => ({
-      ...card,
-      createdAt: card.createdAt instanceof Date ? card.createdAt : new Date(card.createdAt)
+    return cards.map((card: Card | unknown) => ({
+      ...(card as Card),
+      createdAt: (card as Card).createdAt instanceof Date ? (card as Card).createdAt : new Date((card as Card).createdAt)
     }));
   } catch (error) {
     console.error('Error getting card collection:', error);

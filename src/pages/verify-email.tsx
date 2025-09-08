@@ -22,9 +22,9 @@ const VerifyEmail: NextPage = () => {
           setStatus('error');
           setMessage(response.data.error?.message || 'Verification failed.');
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         setStatus('error');
-        setMessage(error.response?.data?.error?.message || 'Verification failed.');
+        setMessage((error as { response?: { data?: { error?: { message?: string } } } }).response?.data?.error?.message || 'Verification failed.');
       }
     };
 

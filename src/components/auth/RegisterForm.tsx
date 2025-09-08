@@ -101,14 +101,15 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
       if (onSuccess) {
         onSuccess();
       }
-    } catch (err: any) {
-      setError(err.response?.data?.error?.message || 'Registration failed. Please try again.');
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { error?: { message?: string; details?: Array<{ field: string; message: string }> } } } };
+      setError(error.response?.data?.error?.message || 'Registration failed. Please try again.');
       
       // Extract field-specific errors from the response
-      const fieldErrors = err.response?.data?.error?.details;
+      const fieldErrors = error.response?.data?.error?.details;
       if (fieldErrors) {
         const errorMap: Record<string, string> = {};
-        fieldErrors.forEach((fieldError: any) => {
+        fieldErrors.forEach((fieldError: { field: string; message: string }) => {
           errorMap[fieldError.field] = fieldError.message;
         });
         setFieldErrors(errorMap);

@@ -1,5 +1,5 @@
-import { CardInstance, GameState, Player, GamePhase } from '@/types/game';
-import { Card, Effect, EffectType, TargetType, Element, CardType, Rarity, CardStats } from '@/types/card';
+import { CardInstance, GameState, Player, GamePhase, GameActionResult } from '@/types/game';
+import { Card, CardType, Rarity, Element } from '@/types/card';
 import { v4 as uuidv4 } from 'uuid';
 import { getCardCollection } from '../storage/localStorage';
 
@@ -85,8 +85,8 @@ export const initializeGame = async (): Promise<GameState> => {
 /**
  * Process a turn in the game, returns new state and actions taken
  */
-export const processTurn = async (gameState: GameState, isPlayerTurn: boolean): Promise<{newState: GameState, actions: any[]}> => {
-  const actions: any[] = [];
+export const processTurn = async (gameState: GameState, isPlayerTurn: boolean): Promise<{newState: GameState, actions: GameActionResult[]}> => {
+  const actions: GameActionResult[] = [];
   const newState = { ...gameState };
   
   // AI opponent logic here...

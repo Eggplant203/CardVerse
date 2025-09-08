@@ -1,4 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
+import jwt from 'jsonwebtoken';
 import { verifyAccessToken } from '../../../lib/auth/jwt';
 import { saveUserCard, getUserCards, updateUserCard, deleteUserCard } from '../../../lib/database/queries/cards';
 import { Card } from '../../../types/card';
@@ -23,10 +24,31 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const token = authHeader.substring(7);
   console.log('Token extracted, verifying...');
+  console.log('Token length:', token.length);
+  console.log('Token starts with:', token.substring(0, 20) + '...');
+  
   const decoded = verifyAccessToken(token);
 
   if (!decoded) {
-    console.log('Token verification failed');
+    console.log('Token verification failed - decoded is null/undefined');
+    console.log('JWT_SECRET from env:', process.env.JWT_SECRET ? 'Set' : 'Not set');
+    console.log('JWT_SECRET length:', process.env.JWT_SECRET?.length || 0);
+    
+    // Try to decode without verification to see payload
+    try {
+      const decodedPayload = jwt.decode(token) as jwt.JwtPayload;
+      console.log('Decoded payload (without verification):', decodedPayload);
+      
+      if (decodedPayload && decodedPayload.exp) {
+        const now = Math.floor(Date.now() / 1000);
+        console.log('Token expiry:', new Date(decodedPayload.exp * 1000));
+        console.log('Current time:', new Date(now * 1000));
+        console.log('Token expired:', decodedPayload.exp < now);
+      }
+    } catch (decodeError) {
+      console.log('Error decoding token:', decodeError);
+    }
+    
     return res.status(401).json({
       success: false,
       error: {
@@ -112,7 +134,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
 
       console.log('About to call deleteUserCard with userId:', userId, 'cardId:', cardId);
-      const deleteResult = await deleteUserCard(userId, cardId);
+      await deleteUserCard(userId, cardId);
       console.log('deleteUserCard completed');
 
       return res.status(200).json({

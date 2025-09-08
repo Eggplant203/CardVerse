@@ -1,4 +1,4 @@
-import { Pool } from 'pg';
+import { Pool, PoolClient } from 'pg';
 import { neon, neonConfig } from '@neondatabase/serverless';
 
 // Configure neon to use fetch API
@@ -47,7 +47,7 @@ export async function testConnection(): Promise<boolean> {
 }
 
 // Helper for transactions
-export async function transaction<T>(callback: (client: any) => Promise<T>): Promise<T> {
+export async function transaction<T>(callback: (client: PoolClient) => Promise<T>): Promise<T> {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
