@@ -3,6 +3,7 @@ import type { Card as CardType } from '@/types/card';
 import { Rarity, Element } from '@/types/card';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
+import { getElementHexColor } from '@/utils/cardUtils';
 
 interface CardProps {
   card: CardType;
@@ -89,7 +90,7 @@ const Card: React.FC<CardProps> = ({
       {/* Card Type and Rarity - Small tag below header */}
       <div className="flex justify-between px-1 py-0.5 bg-gray-700 text-white text-xs">
         <span className="capitalize">{card.type}</span>
-        <span className="capitalize">{card.element}</span>
+        <span className="capitalize font-bold" style={{color: getElementHexColor(card.element)}}>{card.element}</span>
         <span className={`capitalize font-bold ${rarityTextColors[card.rarity]}`}>{card.rarity}</span>
       </div>
       
@@ -144,7 +145,7 @@ const Card: React.FC<CardProps> = ({
         <div className="card-description text-xs p-1 bg-gray-800 overflow-y-auto flex flex-col gap-1">
           <div className="flex items-center gap-1 text-white text-opacity-90">
             <span>Element:</span>
-            <span className="capitalize flex items-center gap-1">
+            <span className="capitalize flex items-center gap-1 font-bold" style={{color: getElementHexColor(card.element)}}>
               {card.element} {elementProperties[card.element]?.icon}
             </span>
           </div>

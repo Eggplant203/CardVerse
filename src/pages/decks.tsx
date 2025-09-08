@@ -24,10 +24,12 @@ const Decks: NextPage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editingDeckName, setEditingDeckName] = useState('');
   const [selectedCards, setSelectedCards] = useState<CardType[]>([]);
+  const [isLoadingDecks, setIsLoadingDecks] = useState<boolean>(true);
 
   useEffect(() => {
     // Load the user's card collection and decks from storage
     const loadData = async () => {
+      setIsLoadingDecks(true);
       try {
         const result = await CardAPI.getUserCards(auth.user?.id || null, auth.isGuestMode);
         if (result.success && result.data) {
@@ -50,6 +52,8 @@ const Decks: NextPage = () => {
       } catch (err) {
         console.error('Failed to load data:', err);
         setCards([]);
+      } finally {
+        setIsLoadingDecks(false);
       }
     };
 
@@ -217,7 +221,15 @@ const Decks: NextPage = () => {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {decks.map((deck) => (
+              {isLoadingDecks ? (
+                <div className="col-span-full text-center py-16">
+                  <div className="flex flex-col items-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
+                    <p className="text-gray-400">Loading your decks...</p>
+                  </div>
+                </div>
+              ) : decks.length > 0 ? (
+                decks.map((deck) => (
                 <motion.div
                   key={deck.id}
                   whileHover={{ y: -5 }}
@@ -256,14 +268,15 @@ const Decks: NextPage = () => {
                     </div>
                   </div>
                 </motion.div>
-              ))}
-              
-              {decks.length === 0 && (
-                <div className="col-span-full text-center py-12">
-                  <p className="text-gray-400 mb-6">You don&apos;t have any decks yet</p>
-                  <Button onClick={handleCreateDeck} variant="primary" size="lg">
-                    Create Your First Deck
-                  </Button>
+              ))
+              ) : (
+                <div className="col-span-full text-center py-16">
+                  <div className="flex flex-col items-center">
+                    <p className="text-gray-400 mb-6">You don&apos;t have any decks yet</p>
+                    <Button onClick={handleCreateDeck} variant="primary" size="lg">
+                      Create Your First Deck
+                    </Button>
+                  </div>
                 </div>
               )}
             </div>

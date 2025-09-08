@@ -62,6 +62,9 @@ export interface AuthContextValue {
   isLoading: boolean;
   isAuthenticated: boolean;
   isGuestMode: boolean;
+  isLoggingIn: boolean;
+  isRegistering: boolean;
+  isLoggingOut: boolean;
   login: (credentials: LoginCredentials) => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
   logout: () => void;

@@ -30,6 +30,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isGuestMode, setIsGuestMode] = useState(false);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   // Request notification permission
   const requestNotificationPermission = async (): Promise<void> => {
@@ -250,7 +253,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   // Register a new user
   const register = async (data: RegisterData): Promise<void> => {
-    setIsLoading(true);
+    setIsRegistering(true);
     try {
       const response = await axios.post('/api/auth/register', data, { skipAuthRefresh: true } as AxiosRequestConfig & { skipAuthRefresh: boolean });
 
@@ -278,13 +281,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       // Error will be handled by the component
       throw error;
     } finally {
-      setIsLoading(false);
+      setIsRegistering(false);
     }
   };
 
   // Login a user
   const login = async (credentials: LoginCredentials): Promise<void> => {
-    setIsLoading(true);
+    setIsLoggingIn(true);
     try {
       const response = await axios.post('/api/auth/login', credentials, { skipAuthRefresh: true } as AxiosRequestConfig & { skipAuthRefresh: boolean });
 
@@ -330,13 +333,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       // Error will be handled by the component
       throw error;
     } finally {
-      setIsLoading(false);
+      setIsLoggingIn(false);
     }
   };
 
   // Logout a user
   const logout = useCallback(async (): Promise<void> => {
-    setIsLoading(true);
+    setIsLoggingOut(true);
     try {
       // Call logout API if authenticated
       if (isAuthenticated) {
@@ -375,7 +378,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         '/favicon-32x32.svg'
       );
 
-      setIsLoading(false);
+      setIsLoggingOut(false);
     }
   }, [isAuthenticated]);
 
@@ -511,6 +514,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     isLoading,
     isAuthenticated,
     isGuestMode,
+    isLoggingIn,
+    isRegistering,
+    isLoggingOut,
     login,
     register,
     logout,

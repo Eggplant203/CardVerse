@@ -7,7 +7,7 @@ export const STAT_RANGES = {
   ATTACK: { min: 1, max: 50 },
   DEFENSE: { min: 0, max: 25 },
   SPEED: { min: 1, max: 20 },
-  MANA_COST: { min: 1, max: 10 }
+  MANA_COST: { min: 0, max: 10 }
 };
 
 export enum Rarity {
@@ -21,10 +21,15 @@ export enum Rarity {
 }
 
 export enum CardType {
-  CREATURE = 'creature',
-  SPELL = 'spell',
-  ARTIFACT = 'artifact',
-  EQUIPMENT = 'equipment',
+  CREATURE = 'creature',        // Monster, creature, character
+  SPELL = 'spell',              // Pure spell
+  ARTIFACT = 'artifact',        // Legendary item, artifact
+  EQUIPMENT = 'equipment',      // Weapon/armor equipment
+  LOCATION = 'location',        // Location (forest, mountain, fortress) - suitable for landscape photos
+  TOTEM = 'totem',              // Symbol/totem - suitable for logo, symbol photos
+  SUMMON = 'summon',            // Entity summoned by other spells
+  ENTITY = 'entity',            // Abstract entity (light, darkness, soul)
+  VEHICLE = 'vehicle',          // Machine, aircraft, chariot - suitable for technology/car photos
 }
 
 export enum Element {

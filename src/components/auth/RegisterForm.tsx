@@ -11,7 +11,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
   onSuccess,
   onLoginClick
 }) => {
-  const { register, isLoading } = useAuth();
+  const { register, isRegistering } = useAuth();
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -277,9 +277,9 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
           <button
             type="submit"
             className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
-            disabled={isLoading}
+            disabled={isRegistering}
           >
-            {isLoading ? (
+            {isRegistering ? (
               <span className="flex items-center">
                 <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>

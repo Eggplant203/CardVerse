@@ -1,12 +1,34 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { NextPage } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import Header from '@/components/layout/Header';
 import Button from '@/components/ui/Button';
+import { useAuth } from '@/context/AuthContext';
+import { CardAPI } from '@/services/api/cardAPI';
 
 const Home: NextPage = () => {
+  const auth = useAuth();
+  const [hasCards, setHasCards] = useState<boolean>(false);
+
+  useEffect(() => {
+    const checkUserCards = async () => {
+      try {
+        const result = await CardAPI.getUserCards(auth.user?.id || null, auth.isGuestMode);
+        if (result.success && result.data && result.data.length > 0) {
+          setHasCards(true);
+        } else {
+          setHasCards(false);
+        }
+      } catch (error) {
+        console.error('Error checking user cards:', error);
+        setHasCards(false);
+      }
+    };
+
+    checkUserCards();
+  }, [auth.user?.id, auth.isGuestMode]);
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-gray-900">
       <Header />
@@ -29,7 +51,9 @@ const Home: NextPage = () => {
             </p>
             <div className="flex flex-wrap gap-4">
               <Link href="/create" className="block">
-                <Button size="lg">Create Your First Card</Button>
+                <Button size="lg">
+                  {hasCards ? 'Create New Card' : 'Create Your First Card'}
+                </Button>
               </Link>
               <Link href="/play" className="block">
                 <Button variant="outline" size="lg">Play Now</Button>
@@ -44,10 +68,10 @@ const Home: NextPage = () => {
             transition={{ duration: 0.5, delay: 0.2 }}
           >
             <div className="card-preview relative w-64 h-96">
-              <div className="absolute top-0 left-0 w-64 h-96 transform rotate-[-15deg] translate-x-[-140px] translate-y-[20px]">
+              <div className="absolute top-0 left-0 w-64 h-96 transform rotate-[-15deg] translate-x-[10px] md:translate-x-[-140px] translate-y-[20px]">
                 <Image src="/card-example-1.jpg" alt="Example Card" width={256} height={384} className="rounded-lg shadow-xl" unoptimized priority />
               </div>
-              <div className="absolute top-0 left-0 w-64 h-96 transform rotate-[5deg] translate-x-[-80px] translate-y-[-10px]">
+              <div className="absolute top-0 left-0 w-64 h-96 transform rotate-[5deg] translate-x-[20px] md:translate-x-[-80px] translate-y-[-10px]">
                 <Image src="/card-example-2.jpg" alt="Example Card" width={256} height={384} className="rounded-lg shadow-xl" unoptimized priority />
               </div>
             </div>

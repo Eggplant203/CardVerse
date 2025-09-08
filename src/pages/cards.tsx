@@ -6,7 +6,7 @@ import Card from '@/components/card/Card';
 import Button from '@/components/ui/Button';
 import { Card as CardType, Rarity, Element } from '@/types/card';
 import { CardAPI } from '@/services/api/cardAPI';
-import { formatEffectDescription } from '@/utils/cardUtils';
+import { formatEffectDescription, getElementHexColor } from '@/utils/cardUtils';
 import { useAuth } from '@/context/AuthContext';
 
 // Function to get rarity text color
@@ -89,10 +89,13 @@ const Collection: NextPage = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<boolean>(false);
   const [showMoreDetails, setShowMoreDetails] = useState<boolean>(false);
+  const [isLoadingCards, setIsLoadingCards] = useState<boolean>(true);
+  const [isDeletingCard, setIsDeletingCard] = useState<boolean>(false);
 
   useEffect(() => {
     // Load the user's card collection from storage
     const loadCollection = async () => {
+      setIsLoadingCards(true);
       try {
         const result = await CardAPI.getUserCards(auth.user?.id || null, auth.isGuestMode);
         if (result.success && result.data) {
@@ -103,6 +106,8 @@ const Collection: NextPage = () => {
       } catch (err) {
         console.error('Failed to load card collection:', err);
         setCards([]);
+      } finally {
+        setIsLoadingCards(false);
       }
     };
 
@@ -174,28 +179,35 @@ const Collection: NextPage = () => {
   };
   
   const handleDeleteCard = async () => {
-    if (selectedCard) {
+    if (selectedCard && !isDeletingCard) {
+      setIsDeletingCard(true);
       console.log('Starting delete process for card:', selectedCard.id);
-      const result = await CardAPI.deleteCard(auth.user?.id || null, selectedCard.id, auth.isGuestMode);
-      console.log('Delete result:', result);
-      
-      if (result.success) {
-        console.log('Delete successful, reloading collection...');
-        // Reload collection after deletion
-        const collectionResult = await CardAPI.getUserCards(auth.user?.id || null, auth.isGuestMode);
-        console.log('Reload collection result:', collectionResult);
+      try {
+        const result = await CardAPI.deleteCard(auth.user?.id || null, selectedCard.id, auth.isGuestMode);
+        console.log('Delete result:', result);
         
-        if (collectionResult.success && collectionResult.data) {
-          console.log('Setting new cards array with length:', collectionResult.data.length);
-          console.log('Previous cards length:', cards.length);
-          setCards([...collectionResult.data]); // Force new array reference
-          console.log('Cards state updated');
+        if (result.success) {
+          console.log('Delete successful, reloading collection...');
+          // Reload collection after deletion
+          const collectionResult = await CardAPI.getUserCards(auth.user?.id || null, auth.isGuestMode);
+          console.log('Reload collection result:', collectionResult);
+          
+          if (collectionResult.success && collectionResult.data) {
+            console.log('Setting new cards array with length:', collectionResult.data.length);
+            console.log('Previous cards length:', cards.length);
+            setCards([...collectionResult.data]); // Force new array reference
+            console.log('Cards state updated');
+          } else {
+            console.log('Failed to reload collection or no data returned');
+          }
+          closeCardModal();
         } else {
-          console.log('Failed to reload collection or no data returned');
+          console.log('Delete failed:', result.error);
         }
-        closeCardModal();
-      } else {
-        console.log('Delete failed:', result.error);
+      } catch (error) {
+        console.error('Error deleting card:', error);
+      } finally {
+        setIsDeletingCard(false);
       }
     }
   };
@@ -211,8 +223,8 @@ const Collection: NextPage = () => {
         
         {/* Filter and Search Controls */}
         <div className="controls bg-gray-800 bg-opacity-50 rounded-lg p-4 mb-8">
-          <div className="flex flex-col md:flex-row justify-between gap-4">
-            <div className="search-bar flex-1">
+          <div className="flex flex-col gap-4">
+            <div className="search-bar w-full">
               <input
                 type="text"
                 placeholder="Search cards..."
@@ -222,12 +234,12 @@ const Collection: NextPage = () => {
               />
             </div>
             
-            <div className="flex gap-4">
-              <div className="filter">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="filter flex-1">
                 <select
                   value={filter}
                   onChange={(e) => setFilter(e.target.value)}
-                  className="bg-gray-700 text-white border border-gray-600 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full bg-gray-700 text-white border border-gray-600 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="all">All Cards</option>
                   <option value="aurora">Aurora Element 🌈</option>
@@ -241,11 +253,11 @@ const Collection: NextPage = () => {
                 </select>
               </div>
               
-              <div className="sort">
+              <div className="sort flex-1">
                 <select
                   value={sortOption}
                   onChange={(e) => setSortOption(e.target.value)}
-                  className="bg-gray-700 text-white border border-gray-600 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full bg-gray-700 text-white border border-gray-600 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="date">Newest First</option>
                   <option value="name">Name (A-Z)</option>
@@ -258,7 +270,14 @@ const Collection: NextPage = () => {
         </div>
         
         {/* Cards Grid */}
-        {sortedCards.length > 0 ? (
+        {isLoadingCards ? (
+          <div className="text-center py-16">
+            <div className="flex flex-col items-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
+              <p className="text-gray-400">Loading your collection...</p>
+            </div>
+          </div>
+        ) : sortedCards.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
             {sortedCards.map((card) => (
               <motion.div
@@ -293,14 +312,14 @@ const Collection: NextPage = () => {
       <AnimatePresence>
         {selectedCard && (
           <motion.div
-            className="fixed inset-0 flex items-start sm:items-center justify-center z-50 bg-black bg-opacity-70 p-2 sm:p-4 pt-8 sm:pt-4"
+            className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-70 p-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={closeCardModal}
           >
             <motion.div
-              className="bg-gray-900 rounded-lg p-4 sm:p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto"
+              className="bg-gray-900 rounded-lg p-4 sm:p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
@@ -323,15 +342,29 @@ const Collection: NextPage = () => {
                   <Card card={selectedCard} size="md" />
                 </div>
                 
-                <div className="card-details lg:flex-1 overflow-y-auto lg:max-h-[350px] bg-gray-800 bg-opacity-50 rounded-lg p-4">
+                <div className="card-details lg:flex-1 overflow-y-auto lg:max-h-[400px] bg-gray-800 bg-opacity-50 rounded-lg p-4">
                   <div className="mb-4">
                     <div className="text-gray-400 text-sm">Type</div>
-                    <div className="text-white capitalize">{selectedCard.type} ({selectedCard.element})</div>
+                    <div className="text-white capitalize flex items-center gap-1">
+                      {selectedCard.type} {selectedCard.type && 
+                        {
+                          'creature': '🐉',
+                          'spell': '✨',
+                          'artifact': '🏺',
+                          'equipment': '⚔️',
+                          'location': '🏔️',
+                          'totem': '🗿',
+                          'summon': '📯',
+                          'entity': '👻',
+                          'vehicle': '🚀'
+                        }[selectedCard.type]
+                      }
+                    </div>
                   </div>
                 
                   <div className="mb-4">
                     <div className="text-gray-400 text-sm">Element</div>
-                    <div className="text-white capitalize flex items-center gap-1">
+                    <div className="capitalize flex items-center gap-1 font-bold" style={{color: getElementHexColor(selectedCard.element)}}>
                       {selectedCard.element} {selectedCard.element && 
                         {
                           'aurora': '🌈',
@@ -482,9 +515,11 @@ const Collection: NextPage = () => {
                         <Button 
                           size="sm"
                           onClick={handleDeleteCard}
+                          isLoading={isDeletingCard}
+                          disabled={isDeletingCard}
                           className="bg-red-600 hover:bg-red-700"
                         >
-                          Yes, Delete
+                          {isDeletingCard ? "Deleting..." : "Yes, Delete"}
                         </Button>
                         <Button 
                           size="sm"

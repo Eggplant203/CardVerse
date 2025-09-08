@@ -10,7 +10,7 @@ import { Rarity, Card } from '@/types/card';
 import { analyzeImage } from '@/services/ai/imageAnalysis';
 import { generateCardFromAnalysis } from '@/services/ai/cardGeneration';
 import { ImageStorage } from '@/services/storage/imageStorage';
-import { formatEffectDescription } from '@/utils/cardUtils';
+import { formatEffectDescription, getElementHexColor } from '@/utils/cardUtils';
 import { useAuth } from '@/context/AuthContext';
 import { CardAPI } from '@/services/api/cardAPI';
 
@@ -40,6 +40,7 @@ const CreateCard: NextPage = () => {
   const [showCardDetails, setShowCardDetails] = useState(false);
   const [saveStatus, setSaveStatus] = useState<{message: string; type: 'success' | 'error'} | null>(null);
   const [isCardSaved, setIsCardSaved] = useState<boolean>(false);
+  const [isSavingCard, setIsSavingCard] = useState<boolean>(false);
   const jsonFileInputRef = useRef<HTMLInputElement>(null);
 
   // Function to handle uploading a card from JSON
@@ -218,8 +219,9 @@ const CreateCard: NextPage = () => {
   };
   
   const handleSaveCard = async () => {
-    if (!generatedCard || !uploadedImage || isCardSaved) return;
+    if (!generatedCard || !uploadedImage || isCardSaved || isSavingCard) return;
     
+    setIsSavingCard(true);
     try {
       // Compress the image before saving to reduce storage size
       let imageToSave = uploadedImage;
@@ -282,6 +284,8 @@ const CreateCard: NextPage = () => {
       setTimeout(() => {
         setSaveStatus(null);
       }, 3000);
+    } finally {
+      setIsSavingCard(false);
     }
   };
 
@@ -433,7 +437,7 @@ const CreateCard: NextPage = () => {
                           <span className="text-gray-500">Type:</span> {generatedCard.type}
                         </div>
                         <div className="text-gray-300 text-sm">
-                          <span className="text-gray-500">Element:</span> {generatedCard.element}
+                          <span className="text-gray-500">Element:</span> <span className="capitalize font-bold" style={{color: getElementHexColor(generatedCard.element)}}>{generatedCard.element}</span>
                         </div>
                         <div className="text-gray-300 text-sm">
                           <span className="text-gray-500">Rarity:</span> <span className={getRarityTextColor(generatedCard.rarity)}>{generatedCard.rarity}</span>
@@ -513,7 +517,7 @@ const CreateCard: NextPage = () => {
                           <div>
                             <h4 className="text-gray-400 text-sm">Element</h4>
                             <p className="text-white capitalize flex items-center gap-1">
-                              {generatedCard.element} {generatedCard.element && 
+                              <span className="capitalize font-bold" style={{color: getElementHexColor(generatedCard.element)}}>{generatedCard.element}</span> {generatedCard.element && 
                                 {
                                   'aurora': '🌈',
                                   'void': '⚫',
@@ -619,10 +623,11 @@ const CreateCard: NextPage = () => {
                   <Button 
                     onClick={handleSaveCard} 
                     size="lg"
-                    disabled={isCardSaved}
+                    disabled={isCardSaved || isSavingCard}
+                    isLoading={isSavingCard}
                     className={isCardSaved ? "opacity-50 cursor-not-allowed" : ""}
                   >
-                    {isCardSaved ? "Card Saved ✓" : "Save to Collection"}
+                    {isCardSaved ? "Card Saved ✓" : (isSavingCard ? "Saving..." : "Save to Collection")}
                   </Button>
                   
                   {/* Status Message with Link to Cards Page */}

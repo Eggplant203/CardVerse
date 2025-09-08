@@ -15,11 +15,12 @@ const Header: React.FC<HeaderProps> = ({
   currentMana = 0,
   maxMana = 0
 }) => {
-  const { user, isAuthenticated, isGuestMode } = useAuth();
+  const { user, isAuthenticated, isGuestMode, isLoading } = useAuth();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
-  const userName = user?.displayName || (isGuestMode ? 'Guest' : 'Not logged in');
+  const userName = user?.displayName || (isGuestMode ? 'Guest' : (isLoading ? 'Loading...' : 'Not logged in'));
   const userAvatar = user?.avatarUrl || '/default-avatar.png';
   
   const handleUserClick = () => {
@@ -32,7 +33,7 @@ const Header: React.FC<HeaderProps> = ({
 
   return (
     <>
-      <header className="bg-gray-900 shadow-lg">
+      <header className="bg-gray-900 shadow-lg relative">
         <div className="container mx-auto px-4 py-3 flex justify-between items-center">
           {/* Logo */}
           <Link href="/" className="flex items-center">
@@ -49,32 +50,47 @@ const Header: React.FC<HeaderProps> = ({
 
           {/* Navigation */}
           <nav className="hidden md:flex space-x-6">
-            <NavLink href="/play">Battle</NavLink>
-            <NavLink href="/cards">Collection</NavLink>
             <NavLink href="/create">Create Card</NavLink>
+            <NavLink href="/cards">Collection</NavLink>
             <NavLink href="/decks">Decks</NavLink>
+            <NavLink href="/play">Battle</NavLink>
           </nav>
 
-          {/* Mobile menu button */}
-          <button className="md:hidden text-gray-400 hover:text-white">
-            <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              className="h-6 w-6" 
-              fill="none" 
-              viewBox="0 0 24 24" 
-              stroke="currentColor"
-            >
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth={2} 
-                d="M4 6h16M4 12h16M4 18h16" 
-              />
-            </svg>
-          </button>
+          {/* Mobile menu */}
+          {isMobileMenuOpen && (
+            <div className="md:hidden absolute top-full left-0 right-0 bg-gray-900 shadow-lg z-50">
+              <div className="px-4 py-2 space-y-2">
+                <NavLink href="/create" onClick={() => setIsMobileMenuOpen(false)}>Create Card</NavLink>
+                <NavLink href="/cards" onClick={() => setIsMobileMenuOpen(false)}>Collection</NavLink>
+                <NavLink href="/decks" onClick={() => setIsMobileMenuOpen(false)}>Decks</NavLink>
+                <NavLink href="/play" onClick={() => setIsMobileMenuOpen(false)}>Battle</NavLink>
+              </div>
+            </div>
+          )}
 
           {/* User info */}
           <div className="flex items-center space-x-4">
+            {/* Mobile menu button */}
+            <button 
+              className="md:hidden text-gray-400 hover:text-white mr-2"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                className="h-6 w-6" 
+                fill="none" 
+                viewBox="0 0 24 24" 
+                stroke="currentColor"
+              >
+                <path 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  strokeWidth={2} 
+                  d="M4 6h16M4 12h16M4 18h16" 
+                />
+              </svg>
+            </button>
+
             {/* Mana crystals (only show during gameplay) */}
             {maxMana > 0 && (
               <div className="flex items-center">
@@ -141,11 +157,12 @@ const Header: React.FC<HeaderProps> = ({
 interface NavLinkProps {
   href: string;
   children: ReactNode;
+  onClick?: () => void;
 }
 
-const NavLink: React.FC<NavLinkProps> = ({ href, children }) => {
+const NavLink: React.FC<NavLinkProps> = ({ href, children, onClick }) => {
   return (
-    <Link href={href} className="text-gray-300 hover:text-white transition-colors">
+    <Link href={href} className="text-gray-300 hover:text-white transition-colors block" onClick={onClick}>
       {children}
     </Link>
   );

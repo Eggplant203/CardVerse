@@ -68,6 +68,35 @@ export function getTargetTypesString(): string {
 }
 
 /**
+ * Get inline style color for element text (using hex colors)
+ * @param element The element to get color for
+ * @returns Inline style color string
+ */
+export function getElementTextColorStyle(element: Element): string {
+  const hexColor = getElementHexColor(element);
+  return `color: ${hexColor}`;
+}
+
+/**
+ * Get hex color for element (for HTML styling)
+ * @param element The element to get color for
+ * @returns Hex color string
+ */
+export function getElementHexColor(element: Element): string {
+  const elementHexColors: Record<Element, string> = {
+    [Element.AURORA]: '#9966CC',
+    [Element.VOID]: '#A0A0A0',
+    [Element.CRYSTAL]: '#88CCEE',
+    [Element.BLOOD]: '#CC3333',
+    [Element.STORM]: '#3399FF',
+    [Element.FLORA]: '#66CC66',
+    [Element.AETHER]: '#FFCC00',
+  };
+
+  return elementHexColors[element] || '#FFFFFF';
+}
+
+/**
  * Parse an effect description and apply HTML formatting to keywords
  * This ensures consistency between AI generated formatted text and application rendering
  * @param description The description text that may or may not already contain formatting

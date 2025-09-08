@@ -193,14 +193,17 @@ const generateOpponentDeck = (): Card[] => {
   // Simple AI deck generator
   const deck: Card[] = [];
   
-  // Generate 20 basic cards
+  // Generate 20 basic cards with varied types
   for (let i = 0; i < 20; i++) {
+    const cardTypes = Object.values(CardType);
+    const randomType = cardTypes[Math.floor(Math.random() * cardTypes.length)];
+    
     deck.push({
       id: `ai-card-${i}`,
       name: `AI Card ${i}`,
       description: `AI opponent card ${i}`,
       imageUrl: `/images/cards/ai-card-${i % 5 + 1}.jpg`,
-      type: CardType.CREATURE,
+      type: randomType,
       rarity: i % 5 === 0 ? Rarity.RARE : Rarity.COMMON,
       element: ['fire', 'water', 'earth', 'air', 'neutral'][i % 5] as Element,
       stats: {
