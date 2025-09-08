@@ -346,9 +346,9 @@ const ProfileModal: React.ComponentType<ProfileModalProps> = ({ isOpen, onClose 
                 <div className="relative">
                   <div className="w-24 h-24 rounded-lg overflow-hidden bg-gray-700 flex items-center justify-center">
                     {avatarUrl ? (
-                      <Image src={avatarUrl} alt={displayName} width={96} height={96} className="w-full h-full object-cover" />
+                      <Image src={avatarUrl} alt={displayName} width={96} height={96} className="w-full h-full object-cover" unoptimized priority />
                     ) : (
-                      <Image src="/default-avatar.png" alt={displayName} width={96} height={96} className="w-full h-full object-cover" />
+                      <Image src="/default-avatar.png" alt={displayName} width={96} height={96} className="w-full h-full object-cover" unoptimized priority />
                     )}
                   </div>
                   {isEditing && (

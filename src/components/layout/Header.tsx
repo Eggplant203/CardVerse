@@ -99,7 +99,7 @@ const Header: React.FC<HeaderProps> = ({
               onClick={handleUserClick}
             >
               <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-transparent hover:border-indigo-500 transition-colors">
-                <Image src={userAvatar} alt={userName} width={32} height={32} className="w-full h-full object-cover" />
+                <Image src={userAvatar} alt={userName} width={32} height={32} className="w-full h-full object-cover" unoptimized priority />
               </div>
               <span className="ml-2 text-white text-sm font-medium hidden sm:block">
                 {userName}
