@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import type { Card as CardType } from '@/types/card';
 import { Rarity, Element } from '@/types/card';
 import Image from 'next/image';
@@ -20,6 +20,16 @@ const Card: React.FC<CardProps> = ({
   isPlayable = false,
   isSelected = false,
 }) => {
+  const [isOverflow, setIsOverflow] = useState(false);
+  const titleRef = useRef<HTMLHeadingElement>(null);
+
+  useEffect(() => {
+    if (titleRef.current) {
+      const element = titleRef.current;
+      setIsOverflow(element.scrollWidth > element.clientWidth);
+    }
+  }, [card.name]);
+
   // Define size classes
   const sizeClasses = {
     sm: 'w-31 h-64',
@@ -63,8 +73,18 @@ const Card: React.FC<CardProps> = ({
       transition={{ duration: 0.3 }}
     >
       {/* Card Header */}
-      <div className="card-header flex justify-between items-center p-1 bg-gray-800">
-        <h3 className="text-xs font-bold truncate flex-1">{card.name}</h3>
+      <div className="card-header flex justify-between items-center p-1 bg-gray-800 overflow-hidden">
+        <div 
+          ref={titleRef} 
+          className={`text-xs font-bold flex-1 ${isOverflow ? 'marquee-text' : 'truncate'}`}
+        >
+          {isOverflow ? (
+            <>
+              <span>{card.name}</span>
+              <span className="ml-4">{card.name}</span>
+            </>
+          ) : card.name}
+        </div>
         <div className="mana-cost w-4 h-4 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ backgroundColor: getElementColor(card.element) }}>
           {card.stats.manaCost}
         </div>

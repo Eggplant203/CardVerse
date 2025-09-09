@@ -79,3 +79,21 @@ body {
 .scrollbar-hide::-webkit-scrollbar {
   display: none; /* Chrome, Safari and Opera */
 }
+
+/* Marquee animation for long card names */
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  10% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.marquee-text {
+  animation: marquee 8s linear infinite;
+  white-space: nowrap;
+}

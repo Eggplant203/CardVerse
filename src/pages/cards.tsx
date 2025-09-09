@@ -326,7 +326,7 @@ const Collection: NextPage = () => {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex justify-between items-start mb-2">
-                <h3 className="text-xl font-title text-white truncate pr-2">{selectedCard.name}</h3>
+                <h3 className="text-xl font-title text-white break-words pr-2">{selectedCard.name}</h3>
                 <button 
                   onClick={closeCardModal}
                   className="text-gray-400 hover:text-white"
