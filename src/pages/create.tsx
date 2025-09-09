@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { NextPage } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -41,7 +41,74 @@ const CreateCard: NextPage = () => {
   const [saveStatus, setSaveStatus] = useState<{message: string; type: 'success' | 'error'} | null>(null);
   const [isCardSaved, setIsCardSaved] = useState<boolean>(false);
   const [isSavingCard, setIsSavingCard] = useState<boolean>(false);
+  const [analysisLimitReached, setAnalysisLimitReached] = useState<boolean>(false);
+  const [authUpdateKey, setAuthUpdateKey] = useState(0);
   const jsonFileInputRef = useRef<HTMLInputElement>(null);
+
+  // Reset guest analysis count when user logs in
+  useEffect(() => {
+    if (!auth.isGuestMode && auth.isAuthenticated) {
+      // User has logged in, reset the guest analysis count
+      localStorage.removeItem('cardverse_guest_analysis_count');
+      setAnalysisLimitReached(false);
+      setError(null); // Clear any limit-related errors
+      setAuthUpdateKey(prev => prev + 1); // Force re-render
+    }
+  }, [auth.isGuestMode, auth.isAuthenticated]);
+
+  // Update analysis limit status based on current state
+  useEffect(() => {
+    if (!auth.isGuestMode) {
+      // Not in guest mode, no limit
+      setAnalysisLimitReached(false);
+      setError(null); // Clear any limit-related errors
+    } else {
+      // In guest mode, check current count
+      const GUEST_ANALYSIS_COUNT_KEY = 'cardverse_guest_analysis_count';
+      const currentCount = parseInt(localStorage.getItem(GUEST_ANALYSIS_COUNT_KEY) || '0', 10);
+      setAnalysisLimitReached(currentCount >= 5);
+    }
+  }, [auth.isGuestMode, auth.isAuthenticated, auth.user, authUpdateKey]);
+
+  // Initialize analysis limit status on component mount
+  useEffect(() => {
+    if (!auth.isGuestMode) {
+      setAnalysisLimitReached(false);
+    } else {
+      const GUEST_ANALYSIS_COUNT_KEY = 'cardverse_guest_analysis_count';
+      const currentCount = parseInt(localStorage.getItem(GUEST_ANALYSIS_COUNT_KEY) || '0', 10);
+      setAnalysisLimitReached(currentCount >= 5);
+    }
+  }, [authUpdateKey]); // Also depend on authUpdateKey
+
+  // Force update when auth state changes
+  useEffect(() => {
+    setAuthUpdateKey(prev => prev + 1);
+  }, [auth.isGuestMode, auth.isAuthenticated]);
+
+  // Helper function to check and increment guest analysis count
+  const checkGuestAnalysisLimit = (): boolean => {
+    if (!auth.isGuestMode) return false; // Not guest, no limit
+    
+    const GUEST_ANALYSIS_COUNT_KEY = 'cardverse_guest_analysis_count';
+    const currentCount = parseInt(localStorage.getItem(GUEST_ANALYSIS_COUNT_KEY) || '0', 10);
+    
+    if (currentCount >= 5) {
+      setAnalysisLimitReached(true);
+      return true; // Limit reached
+    }
+    
+    // Increment count
+    localStorage.setItem(GUEST_ANALYSIS_COUNT_KEY, (currentCount + 1).toString());
+    return false; // Can proceed
+  };
+
+  // Helper function to get current guest analysis count
+  const getGuestAnalysisCount = (): number => {
+    if (!auth.isGuestMode) return 0;
+    const GUEST_ANALYSIS_COUNT_KEY = 'cardverse_guest_analysis_count';
+    return parseInt(localStorage.getItem(GUEST_ANALYSIS_COUNT_KEY) || '0', 10);
+  };
 
   // Function to handle uploading a card from JSON
   const uploadCardFromJSON = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -156,8 +223,15 @@ const CreateCard: NextPage = () => {
   const handleAnalyzeImage = async () => {
     if (!uploadedImage) return;
     
+    // Check guest analysis limit
+    if (checkGuestAnalysisLimit()) {
+      setError('You have reached the limit of 5 image analyses as a guest. Please log in or create an account to continue.');
+      return;
+    }
+    
     setIsAnalyzing(true);
     setAnalysisProgress(0);
+    setError(null); // Clear any previous errors
     
     try {
       // Create a progress timer simulation
@@ -391,6 +465,39 @@ const CreateCard: NextPage = () => {
                       ? 'AI is analyzing your image...' 
                       : 'Analysis complete!'}
                   </p>
+                </div>
+              )}
+              
+              {/* Guest Analysis Limit Warning */}
+              {auth.isGuestMode && (
+                <div className="mt-4 p-4 bg-yellow-900 bg-opacity-50 rounded-lg border border-yellow-600">
+                  <div className="flex items-center gap-2 mb-2">
+                    <svg className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                    <p className="text-yellow-400 font-semibold">Guest Mode Limit</p>
+                  </div>
+                  <p className="text-yellow-200 text-sm mb-3">
+                    As a guest, you can analyze up to 5 images. After that, you'll need to log in or create an account to continue.
+                    <br />
+                    <span className="font-semibold text-yellow-300">
+                      {getGuestAnalysisCount()}/5 analyses used
+                    </span>
+                  </p>
+                  {analysisLimitReached && (
+                    <div className="flex gap-2">
+                      <Link href="/auth/login">
+                        <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+                          Log In
+                        </Button>
+                      </Link>
+                      <Link href="/auth/register">
+                        <Button size="sm" className="bg-green-600 hover:bg-green-700">
+                          Sign Up
+                        </Button>
+                      </Link>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
