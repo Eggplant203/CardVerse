@@ -4,9 +4,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Header from '@/components/layout/Header';
 import Card from '@/components/card/Card';
 import Button from '@/components/ui/Button';
-import { Card as CardType, Rarity, Element } from '@/types/card';
+import { Card as CardType, Rarity, Element, CardType as CardTypeEnum } from '@/types/card';
 import { CardAPI } from '@/services/api/cardAPI';
-import { formatEffectDescription, getElementHexColor } from '@/utils/cardUtils';
+import { formatEffectDescription, getElementHexColor, getCardTypeHexColor } from '@/utils/cardUtils';
 import { useAuth } from '@/context/AuthContext';
 
 // Function to get rarity text color
@@ -346,7 +346,7 @@ const Collection: NextPage = () => {
                   <div className="mb-4">
                     <div className="text-gray-400 text-sm">Type</div>
                     <div className="text-white capitalize flex items-center gap-1">
-                      {selectedCard.type} {selectedCard.type && 
+                      <span className="capitalize font-bold" style={{color: getCardTypeHexColor(selectedCard.type as CardTypeEnum)}}>{selectedCard.type}</span> {selectedCard.type && 
                         {
                           'creature': '🐉',
                           'spell': '✨',
@@ -356,7 +356,8 @@ const Collection: NextPage = () => {
                           'totem': '🗿',
                           'summon': '📯',
                           'entity': '👻',
-                          'vehicle': '🚀'
+                          'vehicle': '🚀',
+                          'error': '⚠️'
                         }[selectedCard.type]
                       }
                     </div>

@@ -6,11 +6,11 @@ import { motion } from 'framer-motion';
 import { useDropzone } from 'react-dropzone';
 import Header from '@/components/layout/Header';
 import Button from '@/components/ui/Button';
-import { Rarity, Card } from '@/types/card';
+import { Rarity, Card, CardType } from '@/types/card';
 import { analyzeImage } from '@/services/ai/imageAnalysis';
 import { generateCardFromAnalysis } from '@/services/ai/cardGeneration';
 import { ImageStorage } from '@/services/storage/imageStorage';
-import { formatEffectDescription, getElementHexColor } from '@/utils/cardUtils';
+import { formatEffectDescription, getElementHexColor, getCardTypeHexColor } from '@/utils/cardUtils';
 import { useAuth } from '@/context/AuthContext';
 import { CardAPI } from '@/services/api/cardAPI';
 
@@ -258,10 +258,8 @@ const CreateCard: NextPage = () => {
       // Update state with the generated card
       setGeneratedCard(card);
       
-      // Only set card name if the current name is empty or just whitespace
-      if (!cardName || cardName.trim() === '') {
-        setCardName(card.name);
-      }
+      // Always update card name with the generated card's name
+      setCardName(card.name);
       
       setTimeout(() => {
         setIsAnalyzing(false);
@@ -505,23 +503,18 @@ const CreateCard: NextPage = () => {
                 {/* Card Preview Component */}
                 <div className="flex justify-center mb-6">
                   {/* Card preview with element-based border */}
-                  <div className={`card-preview relative w-80 h-96 border-4 rounded-lg overflow-hidden
-                    ${generatedCard.element === 'aurora' ? 'border-purple-400' : ''}
-                    ${generatedCard.element === 'void' ? 'border-gray-900' : ''}
-                    ${generatedCard.element === 'crystal' ? 'border-fuchsia-600' : ''}
-                    ${generatedCard.element === 'blood' ? 'border-red-800' : ''}
-                    ${generatedCard.element === 'storm' ? 'border-amber-400' : ''}
-                    ${generatedCard.element === 'flora' ? 'border-emerald-600' : ''}
-                    ${generatedCard.element === 'aether' ? 'border-indigo-600' : ''}
-                  `}>
+                  <div className="card-preview relative w-80 h-96 border-4 rounded-lg overflow-hidden" style={{borderColor: getElementHexColor(generatedCard.element)}}>
                     {uploadedImage && (
-                      <Image 
-                        src={uploadedImage} 
-                        alt="Card" 
-                        width={200}
-                        height={150}
-                        className="w-full h-1/2 object-cover" 
-                      />
+                      <div className="relative w-full h-1/2">
+                        <Image 
+                          src={uploadedImage} 
+                          alt="Card" 
+                          fill
+                          className="absolute w-full h-full object-cover" 
+                        />
+                        {/* Semi-transparent element overlay on top of the image */}
+                        <div className="absolute inset-0 opacity-5" style={{ backgroundColor: getElementHexColor(generatedCard.element) }}></div>
+                      </div>
                     )}
                     <div className="p-4 bg-gray-900 h-1/2 overflow-y-auto">
                       <input
@@ -534,13 +527,13 @@ const CreateCard: NextPage = () => {
                       
                       <div className="grid grid-cols-2 gap-2 mb-4">
                         <div className="text-gray-300 text-sm">
-                          <span className="text-gray-500">Type:</span> {generatedCard.type}
+                          <span className="text-gray-500">Type:</span> <span className="capitalize font-bold" style={{color: getCardTypeHexColor(generatedCard.type as CardType)}}>{generatedCard.type}</span>
                         </div>
                         <div className="text-gray-300 text-sm">
                           <span className="text-gray-500">Element:</span> <span className="capitalize font-bold" style={{color: getElementHexColor(generatedCard.element)}}>{generatedCard.element}</span>
                         </div>
                         <div className="text-gray-300 text-sm">
-                          <span className="text-gray-500">Rarity:</span> <span className={getRarityTextColor(generatedCard.rarity)}>{generatedCard.rarity}</span>
+                          <span className="text-gray-500">Rarity:</span> <span className={`capitalize font-bold ${getRarityTextColor(generatedCard.rarity)}`}>{generatedCard.rarity}</span>
                         </div>
                         <div className="text-gray-300 text-sm">
                           <span className="text-gray-500">Mana:</span> {generatedCard.stats.manaCost}
@@ -612,7 +605,22 @@ const CreateCard: NextPage = () => {
                         <div className="grid grid-cols-2 gap-4 mb-4">
                           <div>
                             <h4 className="text-gray-400 text-sm">Type</h4>
-                            <p className="text-white capitalize">{generatedCard.type}</p>
+                            <p className="text-white capitalize flex items-center gap-1">
+                              <span className="capitalize font-bold" style={{color: getCardTypeHexColor(generatedCard.type as CardType)}}>{generatedCard.type}</span> {generatedCard.type && 
+                                {
+                                  'creature': '🐉',
+                                  'spell': '✨',
+                                  'artifact': '🏺',
+                                  'equipment': '⚔️',
+                                  'location': '🏔️',
+                                  'totem': '🗿',
+                                  'summon': '📯',
+                                  'entity': '👻',
+                                  'vehicle': '🚀',
+                                  'error': '⚠️'
+                                }[generatedCard.type]
+                              }
+                            </p>
                           </div>
                           <div>
                             <h4 className="text-gray-400 text-sm">Element</h4>
@@ -632,7 +640,7 @@ const CreateCard: NextPage = () => {
                           </div>
                           <div>
                             <h4 className="text-gray-400 text-sm">Rarity</h4>
-                            <p className={`capitalize ${getRarityTextColor(generatedCard.rarity)}`}>{generatedCard.rarity}</p>
+                            <p className={`capitalize font-bold ${getRarityTextColor(generatedCard.rarity)}`}>{generatedCard.rarity}</p>
                           </div>
                           <div>
                             <h4 className="text-gray-400 text-sm">Mana Cost</h4>

@@ -1,6 +1,6 @@
 import { AIAnalysisResult } from '@/types/api';
 import { v4 as uuidv4 } from 'uuid';
-import { getImageAnalysisError } from '@/data/defaultCards/errorCards';
+import { getImageAnalysisError, getChatbotOverloadAnalysis } from '@/data/defaultCards/errorCards';
 import { generateImageAnalysisPrompt } from '@/services/ai/descriptionGenerator';
 
 /**
@@ -191,6 +191,12 @@ export async function analyzeImage(imageBase64: string): Promise<AIAnalysisResul
       }
       
       console.error(`API request failed with status: ${response.status}`, errorDetail);
+      
+      // Check for specific 503 overload error
+      if (response.status === 503 && errorDetail.includes('overloaded')) {
+        // Return a special analysis result for chatbot overload
+        return getChatbotOverloadAnalysis();
+      }
       
       // Return fallback data from centralized error cards
       return getImageAnalysisError();

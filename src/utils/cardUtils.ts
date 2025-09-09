@@ -17,9 +17,9 @@ export function getElementValues(): string[] {
   return Object.values(Element);
 }
 
-// Get array of card type values from CardType enum
+// Get array of card type values from CardType enum (excluding ERROR type for AI prompts)
 export function getCardTypeValues(): string[] {
-  return Object.values(CardType);
+  return Object.values(CardType).filter(type => type !== CardType.ERROR);
 }
 
 // Get array of rarity values from Rarity enum
@@ -94,6 +94,28 @@ export function getElementHexColor(element: Element): string {
   };
 
   return elementHexColors[element] || '#FFFFFF';
+}
+
+/**
+ * Get hex color for card type (for HTML styling)
+ * @param cardType The card type to get color for
+ * @returns Hex color string
+ */
+export function getCardTypeHexColor(cardType: CardType): string {
+  const cardTypeHexColors: Record<CardType, string> = {
+    [CardType.CREATURE]: '#CD853F', // Lighter brown for creatures
+    [CardType.SPELL]: '#8A2BE2', // Lighter purple for spells
+    [CardType.ARTIFACT]: '#FFD700', // Bright gold for artifacts
+    [CardType.EQUIPMENT]: '#B0C4DE', // Lighter slate gray for equipment
+    [CardType.LOCATION]: '#32CD32', // Lighter green for locations
+    [CardType.TOTEM]: '#CD853F', // Lighter brown for totems
+    [CardType.SUMMON]: '#FF7F50', // Lighter coral for summons
+    [CardType.ENTITY]: '#BA55D3', // Lighter medium purple for entities
+    [CardType.VEHICLE]: '#5F9EA0', // Lighter cadet blue for vehicles
+    [CardType.ERROR]: '#FF4500', // Bright orange red for errors
+  };
+
+  return cardTypeHexColors[cardType] || '#FFFFFF';
 }
 
 /**

@@ -44,7 +44,25 @@ const ProfileModal: React.ComponentType<ProfileModalProps> = ({ isOpen, onClose 
     cooldownTime: 0,
     cooldownMinutes: 0
   });
+  const [statistics, setStatistics] = useState({
+    cardsCreated: 0,
+    gamesWon: 0,
+    decksBuilt: 0,
+    winRate: 0
+  });
+  const [isLoadingStats, setIsLoadingStats] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Helper function to truncate email for mobile display
+  const truncateEmail = (email: string, maxLength: number = 25) => {
+    if (email.length <= maxLength) return email;
+    const atIndex = email.indexOf('@');
+    if (atIndex > 0 && atIndex < maxLength - 3) {
+      // Keep the username part and domain start
+      return email.substring(0, maxLength - 3) + '...';
+    }
+    return email.substring(0, maxLength - 3) + '...';
+  };
 
   // Countdown timer effect for forgot password
   useEffect(() => {
@@ -68,6 +86,28 @@ const ProfileModal: React.ComponentType<ProfileModalProps> = ({ isOpen, onClose 
       setAvatarUrl(user.avatarUrl || '');
     }
   }, [user]);
+
+  // Fetch user statistics when modal opens
+  React.useEffect(() => {
+    if (isOpen && user) {
+      fetchUserStatistics();
+    }
+  }, [isOpen, user]);
+
+  const fetchUserStatistics = async () => {
+    setIsLoadingStats(true);
+    try {
+      const response = await axios.get('/api/user/statistics');
+      if (response.data) {
+        setStatistics(response.data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch user statistics:', error);
+      // Keep default values if fetch fails
+    } finally {
+      setIsLoadingStats(false);
+    }
+  };
 
   const handleSaveProfile = async () => {
     setError(null);
@@ -414,7 +454,14 @@ const ProfileModal: React.ComponentType<ProfileModalProps> = ({ isOpen, onClose 
                   <div className="text-sm text-gray-400">
                     <div>Username: {user.username}</div>
                     <div className="flex items-center space-x-2">
-                      <span>Email: {showEmail ? user.email : '••••••••••••••••'}</span>
+                      <span className="break-words max-w-full">
+                        Email: {showEmail ? (
+                          <>
+                            <span className="hidden sm:inline">{user.email}</span>
+                            <span className="sm:hidden">{truncateEmail(user.email)}</span>
+                          </>
+                        ) : '••••••••••••••••'}
+                      </span>
                       <button
                         onClick={() => setShowEmail(!showEmail)}
                         className="text-gray-500 hover:text-gray-300 transition-colors"
@@ -491,24 +538,32 @@ const ProfileModal: React.ComponentType<ProfileModalProps> = ({ isOpen, onClose 
                 </div>
               </div>
 
-              {/* Game statistics placeholder */}
+              {/* Game statistics */}
               <div className="border-t border-gray-700 pt-4 mt-4">
                 <h3 className="text-md font-medium text-white mb-3">Game Statistics</h3>
                 <div className="grid grid-cols-2 gap-4 text-center">
                   <div className="bg-gray-700/50 p-3 rounded-md">
-                    <div className="text-lg font-bold text-white">0</div>
+                    <div className="text-lg font-bold text-white">
+                      {isLoadingStats ? '...' : statistics.cardsCreated}
+                    </div>
                     <div className="text-xs text-gray-400">Cards Created</div>
                   </div>
                   <div className="bg-gray-700/50 p-3 rounded-md">
-                    <div className="text-lg font-bold text-white">0</div>
+                    <div className="text-lg font-bold text-white">
+                      {isLoadingStats ? '...' : statistics.gamesWon}
+                    </div>
                     <div className="text-xs text-gray-400">Games Won</div>
                   </div>
                   <div className="bg-gray-700/50 p-3 rounded-md">
-                    <div className="text-lg font-bold text-white">0</div>
+                    <div className="text-lg font-bold text-white">
+                      {isLoadingStats ? '...' : statistics.decksBuilt}
+                    </div>
                     <div className="text-xs text-gray-400">Decks Built</div>
                   </div>
                   <div className="bg-gray-700/50 p-3 rounded-md">
-                    <div className="text-lg font-bold text-white">0%</div>
+                    <div className="text-lg font-bold text-white">
+                      {isLoadingStats ? '...' : `${statistics.winRate}%`}
+                    </div>
                     <div className="text-xs text-gray-400">Win Rate</div>
                   </div>
                 </div>

@@ -30,6 +30,7 @@ export enum CardType {
   SUMMON = 'summon',            // Entity summoned by other spells
   ENTITY = 'entity',            // Abstract entity (light, darkness, soul)
   VEHICLE = 'vehicle',          // Machine, aircraft, chariot - suitable for technology/car photos
+  ERROR = 'error',              // Error cards - not included in AI prompts
 }
 
 export enum Element {

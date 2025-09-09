@@ -5,7 +5,7 @@ import { BUFF_EFFECTS } from '@/data/effects/buffs';
 import { DEBUFF_EFFECTS } from '@/data/effects/debuffs';
 import { TRIGGER_EFFECTS } from '@/data/effects/triggers';
 import { PERSISTENT_EFFECTS } from '@/data/effects/persistent';
-import { getCardGenerationError } from '@/data/defaultCards/errorCards';
+import { getCardGenerationError, getChatbotOverloadError } from '@/data/defaultCards/errorCards';
 
 /**
  * Generates a card from AI image analysis results
@@ -63,6 +63,11 @@ export function generateCard(
   // Check if the suggested type is "error" and return an error card if it is
   if (analysisResult.suggestedType?.toLowerCase() === "error") {
     return getCardGenerationError();
+  }
+  
+  // Check if the suggested type is "chatbot_overload" and return the overload error card
+  if (analysisResult.suggestedType?.toLowerCase() === "chatbot_overload") {
+    return getChatbotOverloadError();
   }
   
   // Use direct comparison with enum values instead of maps
