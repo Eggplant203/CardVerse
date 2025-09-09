@@ -79,7 +79,7 @@ const CreateCard: NextPage = () => {
       const currentCount = parseInt(localStorage.getItem(GUEST_ANALYSIS_COUNT_KEY) || '0', 10);
       setAnalysisLimitReached(currentCount >= 5);
     }
-  }, [authUpdateKey]); // Also depend on authUpdateKey
+  }, [authUpdateKey, auth.isGuestMode]); // Also depend on authUpdateKey and auth.isGuestMode
 
   // Force update when auth state changes
   useEffect(() => {
@@ -314,13 +314,12 @@ const CreateCard: NextPage = () => {
         imageUrl: imageToSave // Store the base64 image directly in the card
       };
       
-      // Mark card as saved
-      setIsCardSaved(true);
-      
       // Save the card using the API service (handles both localStorage and database)
       const result = await CardAPI.saveCard(auth.user?.id || null, cardToSave, auth.isGuestMode);
       
       if (result.success) {
+        // Mark card as saved only after successful save
+        setIsCardSaved(true);
         setSaveStatus({
           message: 'Card saved successfully!',
           type: 'success'
@@ -340,12 +339,6 @@ const CreateCard: NextPage = () => {
         // Just log the error but continue, as the image is already saved in the card
         console.warn('Error saving image to IndexedDB:', imgErr);
       }
-      
-      // Show success message with link to collection
-      setSaveStatus({
-        message: 'Card saved to your collection! Click here to view your cards.',
-        type: 'success'
-      });
       
     } catch (error) {
       console.error('Error saving card:', error);
@@ -478,7 +471,7 @@ const CreateCard: NextPage = () => {
                     <p className="text-yellow-400 font-semibold">Guest Mode Limit</p>
                   </div>
                   <p className="text-yellow-200 text-sm mb-3">
-                    As a guest, you can analyze up to 5 images. After that, you'll need to log in or create an account to continue.
+                    As a guest, you can analyze up to 5 images. After that, you&apos;ll need to log in or create an account to continue.
                     <br />
                     <span className="font-semibold text-yellow-300">
                       {getGuestAnalysisCount()}/5 analyses used

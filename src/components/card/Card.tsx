@@ -73,10 +73,10 @@ const Card: React.FC<CardProps> = ({
       transition={{ duration: 0.3 }}
     >
       {/* Card Header */}
-      <div className="card-header flex justify-between items-center p-1 bg-gray-800 overflow-hidden">
+      <div className="card-header flex items-center p-1 bg-gray-800 overflow-hidden">
         <div 
           ref={titleRef} 
-          className={`text-xs font-bold flex-1 ${isOverflow ? 'marquee-text' : 'truncate'}`}
+          className={`text-xs font-bold flex-1 min-w-0 ${isOverflow ? 'marquee-text' : 'truncate'}`}
         >
           {isOverflow ? (
             <>
@@ -85,7 +85,7 @@ const Card: React.FC<CardProps> = ({
             </>
           ) : card.name}
         </div>
-        <div className="mana-cost w-4 h-4 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ backgroundColor: getElementColor(card.element) }}>
+        <div className="mana-cost w-5 h-5 rounded-full flex items-center justify-center text-white text-xs font-bold ml-1 flex-shrink-0 relative z-10" style={{ backgroundColor: getElementColor(card.element) }}>
           {card.stats.manaCost}
         </div>
       </div>
