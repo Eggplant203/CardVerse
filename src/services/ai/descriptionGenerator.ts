@@ -33,9 +33,9 @@ export function generateImageAnalysisPrompt(): string {
       - UNCOMMON: 1-2 effects with minor secondary effects
       - RARE: 2 effects, possibly including passive or trigger effects
       - EPIC: 2-3 effects combining active and passive mechanics
-      - LEGENDARY: 2-3 powerful effects with combined mechanics
-      - MYTHIC: 2-3 unique effects that may change game rules
-      - UNIQUE: 3-4 special effects with multiple layers of mechanics
+      - LEGENDARY: 3 powerful effects with combined mechanics
+      - MYTHIC: 3-4 unique effects that may change game rules
+      - UNIQUE: 4 special effects with multiple layers of mechanics
 
 4. CREATE CARD TEXT:
    - Generate a thematic description (a few short sentences)
