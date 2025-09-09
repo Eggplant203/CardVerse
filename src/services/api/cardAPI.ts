@@ -92,6 +92,47 @@ export class CardAPI {
   }
 
   /**
+   * Check if user already has a specific hidden card
+   */
+  public static async hasHiddenCard(userId: string | null, hiddenCardName: string, isGuest: boolean = false): Promise<ApiResponse<boolean>> {
+    try {
+      // First get all user's cards
+      const cardsResult = await this.getUserCards(userId, isGuest);
+
+      if (!cardsResult.success) {
+        return {
+          success: false,
+          error: {
+            message: 'Failed to check existing cards',
+            code: 'CHECK_ERROR',
+          },
+        };
+      }
+
+      const userCards = cardsResult.data || [];
+
+      // Check if user already has this hidden card
+      const hasCard = userCards.some(card =>
+        card.type === 'hidden' && card.name.toUpperCase() === hiddenCardName.toUpperCase()
+      );
+
+      return {
+        success: true,
+        data: hasCard
+      };
+    } catch (error) {
+      console.error('Error checking for duplicate hidden card:', error);
+      return {
+        success: false,
+        error: {
+          message: 'Failed to check for duplicate hidden card',
+          code: 'CHECK_ERROR',
+        },
+      };
+    }
+  }
+
+  /**
    * Save a card to user's collection
    */
   public static async saveCard(userId: string | null, card: Card, isGuest: boolean = false): Promise<ApiResponse<Card>> {

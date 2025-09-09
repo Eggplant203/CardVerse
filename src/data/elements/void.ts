@@ -10,9 +10,6 @@ export const VOID_ELEMENT = {
   commonEffects: ['drain', 'weaken', 'silence'],
   statBias: {
     health: 5,
-    attack: -5,
-    defense: 10,
-    speed: -5,
-    stamina: 0
+    attack: -5
   }
 };

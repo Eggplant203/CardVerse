@@ -2,12 +2,9 @@
 
 // Card stat ranges
 export const STAT_RANGES = {
-  HEALTH: { min: 1, max: 100 },
-  STAMINA: { min: 1, max: 50 },
-  ATTACK: { min: 1, max: 50 },
-  DEFENSE: { min: 0, max: 25 },
-  SPEED: { min: 1, max: 20 },
-  MANA_COST: { min: 0, max: 10 }
+  HEALTH: { min: 1, max: 12 },      // HP of units/cards, max ~12 to avoid 'immortal tanks'
+  ATTACK: { min: 0, max: 12 },      // Damage, 0 for defensive/support units
+  MANA_COST: { min: 0, max: 10 }    // Mana cost following 0-10 standard, higher values can unbalance the game
 };
 
 export enum Rarity {
@@ -30,6 +27,7 @@ export enum CardType {
   SUMMON = 'summon',            // Entity summoned by other spells
   ENTITY = 'entity',            // Abstract entity (light, darkness, soul)
   VEHICLE = 'vehicle',          // Machine, aircraft, chariot - suitable for technology/car photos
+  HIDDEN = 'hidden',            // Hidden cards for dev and easter eggs - not included in AI prompts
   ERROR = 'error',              // Error cards - not included in AI prompts
 }
 
@@ -45,10 +43,7 @@ export enum Element {
 
 export interface CardStats {
   health: number;
-  stamina: number;
   attack: number;
-  defense: number;
-  speed: number;
   manaCost: number;
 }
 

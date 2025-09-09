@@ -103,27 +103,12 @@ export class EffectProcessor {
       target.currentStats.attack += magnitude;
     }
     
-    if (effect.description.toLowerCase().includes('defense')) {
-      target.currentStats.defense += magnitude;
-    }
-    
-    if (effect.description.toLowerCase().includes('speed')) {
-      target.currentStats.speed += magnitude;
-    }
-    
     if (effect.description.toLowerCase().includes('health')) {
       target.currentStats.health += magnitude;
     }
     
-    if (effect.description.toLowerCase().includes('stamina')) {
-      target.currentStats.stamina += magnitude;
-    }
-    
     // Ensure stats don't go below 0 (except health which can)
     target.currentStats.attack = Math.max(0, target.currentStats.attack);
-    target.currentStats.defense = Math.max(0, target.currentStats.defense);
-    target.currentStats.speed = Math.max(0, target.currentStats.speed);
-    target.currentStats.stamina = Math.max(0, target.currentStats.stamina);
   }
   
   /**

@@ -10,9 +10,6 @@ export const CRYSTAL_ELEMENT = {
   commonEffects: ['reflect', 'enhance', 'barrier'],
   statBias: {
     health: 0,
-    attack: 0,
-    defense: 15,
-    speed: -5,
-    stamina: 5
+    attack: 0
   }
 };

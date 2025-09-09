@@ -10,9 +10,6 @@ export const BLOOD_ELEMENT = {
   commonEffects: ['sacrifice', 'leech', 'berserk'],
   statBias: {
     health: 10,
-    attack: 15,
-    defense: -10,
-    speed: 0,
-    stamina: 0
+    attack: 15
   }
 };

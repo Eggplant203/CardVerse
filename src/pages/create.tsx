@@ -7,6 +7,7 @@ import { useDropzone } from 'react-dropzone';
 import Header from '@/components/layout/Header';
 import Button from '@/components/ui/Button';
 import { Rarity, Card, CardType } from '@/types/card';
+import { HIDDEN_CARDS } from '@/data/defaultCards';
 import { analyzeImage } from '@/services/ai/imageAnalysis';
 import { generateCardFromAnalysis } from '@/services/ai/cardGeneration';
 import { ImageStorage } from '@/services/storage/imageStorage';
@@ -43,6 +44,7 @@ const CreateCard: NextPage = () => {
   const [isSavingCard, setIsSavingCard] = useState<boolean>(false);
   const [analysisLimitReached, setAnalysisLimitReached] = useState<boolean>(false);
   const [authUpdateKey, setAuthUpdateKey] = useState(0);
+  const [isLoadingRandomImage, setIsLoadingRandomImage] = useState(false);
   const jsonFileInputRef = useRef<HTMLInputElement>(null);
 
   // Reset guest analysis count when user logs in
@@ -146,8 +148,17 @@ const CreateCard: NextPage = () => {
         }
         
         // Set the image if it exists in the JSON
-        if (cardData.imageUrl && cardData.imageUrl.startsWith('data:')) {
-          setUploadedImage(cardData.imageUrl);
+        if (cardData.imageUrl) {
+          if (cardData.imageUrl.startsWith('data:')) {
+            // Handle base64 image data
+            setUploadedImage(cardData.imageUrl);
+          } else if (cardData.imageUrl.startsWith('/')) {
+            // Handle local image path (like hidden cards)
+            setUploadedImage(cardData.imageUrl);
+          } else {
+            // Clear any existing image for other cases
+            setUploadedImage(null);
+          }
         } else {
           // Clear any existing image
           setUploadedImage(null);
@@ -160,6 +171,7 @@ const CreateCard: NextPage = () => {
         
         // Reset save state to allow saving the uploaded card
         setIsCardSaved(false);
+        setSaveStatus(null);
         
         // Reset the file input to allow selecting the same file again
         if (jsonFileInputRef.current) {
@@ -209,6 +221,8 @@ const CreateCard: NextPage = () => {
     // Reset states
     setGeneratedCard(null);
     setCardName('');
+    setIsCardSaved(false);
+    setSaveStatus(null);
     
   }, []);
   
@@ -261,6 +275,10 @@ const CreateCard: NextPage = () => {
       // Always update card name with the generated card's name
       setCardName(card.name);
       
+      // Reset save state since this is a new card
+      setIsCardSaved(false);
+      setSaveStatus(null);
+      
       setTimeout(() => {
         setIsAnalyzing(false);
         setAnalysisProgress(0);
@@ -271,7 +289,7 @@ const CreateCard: NextPage = () => {
       
       // Show a more specific error message if available
       const errorMessage = (err as Error).message
-        ? `Error analyzing image: ${(err as Error).message}`
+        ? `Error analyzing image: ${(err as Error).message}` 
         : 'Error analyzing image. Please try again.';
       
       setError(errorMessage);
@@ -279,8 +297,37 @@ const CreateCard: NextPage = () => {
       setAnalysisProgress(0);
     }
   };
-  
-  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+
+  const handleRandomImage = async () => {
+    setError(null);
+    setIsLoadingRandomImage(true);
+    try {
+      // Use a random image from picsum.photos with appropriate dimensions (320x192 for card aspect ratio)
+      const randomId = Math.floor(Math.random() * 1000);
+      const imageUrl = `https://picsum.photos/500/500?random=${randomId}`;
+      
+      // Fetch the image and convert to base64 for consistency with uploaded images
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      const reader = new FileReader();
+      
+      reader.onload = () => {
+        setUploadedImage(reader.result as string);
+        // Reset states
+        setGeneratedCard(null);
+        setCardName('');
+        setIsCardSaved(false);
+        setSaveStatus(null);
+        setIsLoadingRandomImage(false);
+      };
+      
+      reader.readAsDataURL(blob);
+    } catch (err: unknown) {
+      console.error('Error fetching random image:', err);
+      setError('Failed to load random image. Please try again.');
+      setIsLoadingRandomImage(false);
+    }
+  };  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setCardName(e.target.value);
     if (generatedCard) {
       setGeneratedCard({
@@ -312,16 +359,71 @@ const CreateCard: NextPage = () => {
         imageUrl: imageToSave // Store the base64 image directly in the card
       };
       
+      // Check for easter egg - Dynamic hidden card detection
+      let finalCardToSave = cardToSave;
+      const upperCardName = cardName.trim().toUpperCase();
+
+      // Create a mapping from trigger names to hidden card keys
+      const triggerMapping: Record<string, keyof typeof HIDDEN_CARDS> = {
+        'EGGPLANT STUDIO': 'EGGPLANT_STUDIO',
+        '???': 'MYSTERY',
+        'NULL': 'NULL'
+      };
+
+      // Check if the entered name matches any trigger
+      const hiddenCardKey = triggerMapping[upperCardName];
+
+      if (hiddenCardKey && HIDDEN_CARDS[hiddenCardKey]) {
+        // Check if user already has this hidden card
+        const hasCardResult = await CardAPI.hasHiddenCard(auth.user?.id || null, HIDDEN_CARDS[hiddenCardKey].name, auth.isGuestMode);
+
+        if (hasCardResult.success && hasCardResult.data) {
+          // User already has this hidden card
+          setSaveStatus({
+            message: `❌ You already have "${HIDDEN_CARDS[hiddenCardKey].name}" in your collection! Each hidden card can only be obtained once.`,
+            type: 'error'
+          });
+          setIsSavingCard(false);
+          return;
+        }
+
+        // Replace with the corresponding hidden card
+        finalCardToSave = {
+          ...HIDDEN_CARDS[hiddenCardKey],
+          id: `hidden-${Date.now()}`, // Generate unique ID
+          createdAt: new Date(),
+          createdBy: auth.user?.id || 'guest'
+        };
+      }
+      
       // Save the card using the API service (handles both localStorage and database)
-      const result = await CardAPI.saveCard(auth.user?.id || null, cardToSave, auth.isGuestMode);
+      const result = await CardAPI.saveCard(auth.user?.id || null, finalCardToSave, auth.isGuestMode);
       
       if (result.success) {
         // Mark card as saved only after successful save
         setIsCardSaved(true);
-        setSaveStatus({
-          message: 'Card saved successfully!',
-          type: 'success'
-        });
+
+        // Create mapping for success messages
+        const successMessages: Record<string, string> = {
+          'EGGPLANT STUDIO': '🎉 Congratulations! You found the Easter Egg! The Eggplant Overlord has joined your collection!',
+          '???': '❓ MYSTERY UNLOCKED! The enigmatic ??? has appeared! What secrets does it hold?',
+          'NULL': '🕳️ VOID AWAKENED! Null has emerged from the emptiness! All effects tremble before it!'
+        };
+
+        // Check if this was a hidden card trigger
+        const successMessage = successMessages[upperCardName];
+
+        if (successMessage) {
+          setSaveStatus({
+            message: successMessage,
+            type: 'success'
+          });
+        } else {
+          setSaveStatus({
+            message: 'Card saved successfully! Click here to view your saved cards',
+            type: 'success'
+          });
+        }
       } else {
         setSaveStatus({
           message: result.error?.message || 'Failed to save card',
@@ -332,7 +434,7 @@ const CreateCard: NextPage = () => {
       
       // Also save image to IndexedDB for potential future optimization
       try {
-        await ImageStorage.saveImageToIndexedDB(cardToSave.id, imageToSave);
+        await ImageStorage.saveImageToIndexedDB(finalCardToSave.id, imageToSave);
       } catch (imgErr) {
         // Just log the error but continue, as the image is already saved in the card
         console.warn('Error saving image to IndexedDB:', imgErr);
@@ -430,44 +532,63 @@ const CreateCard: NextPage = () => {
             </div>
 
             {/* Analysis Button */}
-            <div className="text-center">
+            <div className="flex justify-center items-center gap-2 mb-4">
               <Button 
                 onClick={handleAnalyzeImage}
-                disabled={!uploadedImage || isAnalyzing}
+                disabled={!uploadedImage || isAnalyzing || isLoadingRandomImage}
                 isLoading={isAnalyzing}
                 size="lg"
               >
                 {isAnalyzing ? 'Analyzing...' : 'Analyze Image'}
               </Button>
               
-              {/* Progress bar */}
-              {isAnalyzing && (
-                <div className="mt-4">
-                  <div className="w-full bg-gray-700 rounded-full h-2.5">
-                    <motion.div 
-                      className="bg-blue-600 h-2.5 rounded-full" 
-                      initial={{ width: '0%' }}
-                      animate={{ width: `${analysisProgress}%` }}
-                      transition={{ duration: 0.5 }}
-                    />
-                  </div>
-                  <p className="text-gray-400 mt-2 text-sm">
-                    {analysisProgress < 100 
-                      ? 'AI is analyzing your image...' 
-                      : 'Analysis complete!'}
-                  </p>
+              {/* Random Image Button */}
+              <button
+                onClick={handleRandomImage}
+                disabled={isAnalyzing || isLoadingRandomImage}
+                className="px-6 py-3 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[3rem] min-h-[3rem]"
+                title="Load Random Image"
+              >
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  className={`h-5 w-5 transition-transform duration-1000 ${isLoadingRandomImage ? 'animate-spin' : ''}`} 
+                  viewBox="0 0 20 20" 
+                  fill="currentColor"
+                >
+                  <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
+                </svg>
+              </button>
+            </div>
+            
+            {/* Progress bar */}
+            {isAnalyzing && (
+              <div className="mt-4 text-center">
+                <div className="w-full bg-gray-700 rounded-full h-2.5">
+                  <motion.div 
+                    className="bg-blue-600 h-2.5 rounded-full" 
+                    initial={{ width: '0%' }}
+                    animate={{ width: `${analysisProgress}%` }}
+                    transition={{ duration: 0.5 }}
+                  />
                 </div>
-              )}
-              
-              {/* Guest Analysis Limit Warning */}
-              {auth.isGuestMode && (
-                <div className="mt-4 p-4 bg-yellow-900 bg-opacity-50 rounded-lg border border-yellow-600">
-                  <div className="flex items-center gap-2 mb-2">
-                    <svg className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                    </svg>
-                    <p className="text-yellow-400 font-semibold">Guest Mode Limit</p>
-                  </div>
+                <p className="text-gray-400 mt-2 text-sm">
+                  {analysisProgress < 100 
+                    ? 'AI is analyzing your image...' 
+                    : 'Analysis complete!'}
+                </p>
+              </div>
+            )}
+            
+            {/* Guest Analysis Limit Warning */}
+            {auth.isGuestMode && (
+              <div className="mt-4 p-4 bg-yellow-900 bg-opacity-50 rounded-lg border border-yellow-600">
+                <div className="flex items-center gap-2 mb-2">
+                  <svg className="w-5 h-5 text-yellow-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                  <p className="text-yellow-400 font-semibold">Guest Mode Limit</p>
+                </div>
+                <div className="text-center">
                   <p className="text-yellow-200 text-sm mb-3">
                     As a guest, you can analyze up to 5 images. After that, you&apos;ll need to log in or create an account to continue.
                     <br />
@@ -475,23 +596,9 @@ const CreateCard: NextPage = () => {
                       {getGuestAnalysisCount()}/5 analyses used
                     </span>
                   </p>
-                  {analysisLimitReached && (
-                    <div className="flex gap-2">
-                      <Link href="/auth/login">
-                        <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
-                          Log In
-                        </Button>
-                      </Link>
-                      <Link href="/auth/register">
-                        <Button size="sm" className="bg-green-600 hover:bg-green-700">
-                          Sign Up
-                        </Button>
-                      </Link>
-                    </div>
-                  )}
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
           
           {/* Right column: Card Preview */}
@@ -504,10 +611,11 @@ const CreateCard: NextPage = () => {
                 <div className="flex justify-center mb-6">
                   {/* Card preview with element-based border */}
                   <div className="card-preview relative w-80 h-96 border-4 rounded-lg overflow-hidden" style={{borderColor: getElementHexColor(generatedCard.element)}}>
-                    {uploadedImage && (
+                    {/* Display image based on card type */}
+                    {((generatedCard.type === CardType.ERROR && generatedCard.imageUrl) || uploadedImage) && (
                       <div className="relative w-full h-1/2">
                         <Image 
-                          src={uploadedImage} 
+                          src={generatedCard.type === CardType.ERROR ? generatedCard.imageUrl! : uploadedImage!} 
                           alt="Card" 
                           fill
                           className="absolute w-full h-full object-cover" 
@@ -535,9 +643,6 @@ const CreateCard: NextPage = () => {
                         <div className="text-gray-300 text-sm">
                           <span className="text-gray-500">Rarity:</span> <span className={`capitalize font-bold ${getRarityTextColor(generatedCard.rarity)}`}>{generatedCard.rarity}</span>
                         </div>
-                        <div className="text-gray-300 text-sm">
-                          <span className="text-gray-500">Mana:</span> {generatedCard.stats.manaCost}
-                        </div>
                       </div>
                       
                       <div className="stats grid grid-cols-2 gap-2 mb-4">
@@ -546,12 +651,6 @@ const CreateCard: NextPage = () => {
                         </div>
                         <div className="text-white text-sm">
                           ATK: {generatedCard.stats.attack}
-                        </div>
-                        <div className="text-white text-sm">
-                          DEF: {generatedCard.stats.defense}
-                        </div>
-                        <div className="text-white text-sm">
-                          SPD: {generatedCard.stats.speed}
                         </div>
                       </div>
                       
@@ -617,6 +716,7 @@ const CreateCard: NextPage = () => {
                                   'summon': '📯',
                                   'entity': '👻',
                                   'vehicle': '🚀',
+                                  'hidden': '🎭',
                                   'error': '⚠️'
                                 }[generatedCard.type]
                               }
@@ -642,10 +742,6 @@ const CreateCard: NextPage = () => {
                             <h4 className="text-gray-400 text-sm">Rarity</h4>
                             <p className={`capitalize font-bold ${getRarityTextColor(generatedCard.rarity)}`}>{generatedCard.rarity}</p>
                           </div>
-                          <div>
-                            <h4 className="text-gray-400 text-sm">Mana Cost</h4>
-                            <p className="text-white">{generatedCard.stats.manaCost}</p>
-                          </div>
                         </div>
                         
                         <div className="grid grid-cols-2 gap-4 mb-4">
@@ -656,14 +752,6 @@ const CreateCard: NextPage = () => {
                           <div>
                             <h4 className="text-gray-400 text-sm">Attack</h4>
                             <p className="text-white">{generatedCard.stats.attack}</p>
-                          </div>
-                          <div>
-                            <h4 className="text-gray-400 text-sm">Defense</h4>
-                            <p className="text-white">{generatedCard.stats.defense}</p>
-                          </div>
-                          <div>
-                            <h4 className="text-gray-400 text-sm">Speed</h4>
-                            <p className="text-white">{generatedCard.stats.speed}</p>
                           </div>
                         </div>
                         
@@ -746,7 +834,13 @@ const CreateCard: NextPage = () => {
                         saveStatus.type === 'success' ? 'bg-green-600' : 'bg-red-600'
                       }`}
                     >
-                      {saveStatus.message}
+                      {saveStatus.message.includes('Click here') ? (
+                        <>
+                          Card saved successfully! <span className="underline">Click here</span> to view your saved cards
+                        </>
+                      ) : (
+                        saveStatus.message
+                      )}
                     </Link>
                   )}
                 </div>

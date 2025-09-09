@@ -43,10 +43,7 @@ export interface AIAnalysisResult {
   generatedLore: string;
   suggestedStats: {
     health: number;
-    stamina: number;
     attack: number;
-    defense: number;
-    speed: number;
     manaCost: number;
   };
   suggestedEffects: {

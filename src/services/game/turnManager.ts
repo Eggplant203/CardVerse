@@ -245,10 +245,7 @@ export class TurnManager {
       position: null, // Not on battlefield yet
       currentStats: {
         health: card.stats.health,
-        stamina: card.stats.stamina,
-        attack: card.stats.attack,
-        defense: card.stats.defense,
-        speed: card.stats.speed
+        attack: card.stats.attack
       },
       activeEffects: [],
       canAttack: false,

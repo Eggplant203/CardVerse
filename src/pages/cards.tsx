@@ -357,6 +357,7 @@ const Collection: NextPage = () => {
                           'summon': '📯',
                           'entity': '👻',
                           'vehicle': '🚀',
+                          'hidden': '🎭',
                           'error': '⚠️'
                         }[selectedCard.type]
                       }
@@ -387,15 +388,10 @@ const Collection: NextPage = () => {
                   
                   <div className="mb-4">
                     <div className="text-gray-400 text-sm">Stats</div>
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-3 gap-2">
                       <div className="text-white text-sm">HP: {selectedCard.stats.health}</div>
                       <div className="text-white text-sm">ATK: {selectedCard.stats.attack}</div>
-                      <div className="text-white text-sm">DEF: {selectedCard.stats.defense}</div>
-                      <div className="text-white text-sm">SPD: {selectedCard.stats.speed}</div>
                       <div className="text-white text-sm">Mana: {selectedCard.stats.manaCost}</div>
-                      {selectedCard.stats.stamina && (
-                        <div className="text-white text-sm">Stamina: {selectedCard.stats.stamina}</div>
-                      )}
                     </div>
                   </div>
                   

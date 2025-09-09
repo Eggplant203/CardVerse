@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import type { Card as CardType } from '@/types/card';
-import { Rarity, Element, CardType as CardTypeEnum } from '@/types/card';
+import { Rarity, Element, CardType as CardTypeEnum, STAT_RANGES } from '@/types/card';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { getElementHexColor, getCardTypeHexColor } from '@/utils/cardUtils';
+import { getElementHexColor, getCardTypeHexColor, getHpColor, getAtkColor } from '@/utils/cardUtils';
 
 interface CardProps {
   card: CardType;
@@ -124,22 +124,14 @@ const Card: React.FC<CardProps> = ({
       </div>
       
       {/* Card Stats */}
-      <div className="card-stats flex justify-between p-1 bg-gray-900 text-white text-xs">
+      <div className="card-stats flex justify-between px-3 py-1 bg-gray-900 text-white text-xs">
         <div className="attack flex items-center">
           <span className="mr-1">⚔️</span>
-          <span>{card.stats.attack}</span>
+          <span className="font-bold" style={{ color: getAtkColor(card.stats.attack, STAT_RANGES.ATTACK.min, STAT_RANGES.ATTACK.max) }}>{card.stats.attack}</span>
         </div>
         <div className="health flex items-center">
           <span className="mr-1">❤️</span>
-          <span>{card.stats.health}</span>
-        </div>
-        <div className="defense flex items-center">
-          <span className="mr-1">🛡️</span>
-          <span>{card.stats.defense}</span>
-        </div>
-        <div className="speed flex items-center">
-          <span className="mr-1">⚡</span>
-          <span>{card.stats.speed}</span>
+          <span className="font-bold" style={{ color: getHpColor(card.stats.health, STAT_RANGES.HEALTH.min, STAT_RANGES.HEALTH.max) }}>{card.stats.health}</span>
         </div>
       </div>
       

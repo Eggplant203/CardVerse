@@ -10,9 +10,6 @@ export const FLORA_ELEMENT = {
   commonEffects: ['heal', 'regenerate', 'summon_nature'],
   statBias: {
     health: 15,
-    attack: -5,
-    defense: 5,
-    speed: -5,
-    stamina: 10
+    attack: -5
   }
 };

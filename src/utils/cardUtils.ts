@@ -17,9 +17,9 @@ export function getElementValues(): string[] {
   return Object.values(Element);
 }
 
-// Get array of card type values from CardType enum (excluding ERROR type for AI prompts)
+// Get array of card type values from CardType enum (excluding ERROR and HIDDEN types for AI prompts)
 export function getCardTypeValues(): string[] {
-  return Object.values(CardType).filter(type => type !== CardType.ERROR);
+  return Object.values(CardType).filter(type => type !== CardType.ERROR && type !== CardType.HIDDEN);
 }
 
 // Get array of rarity values from Rarity enum
@@ -45,10 +45,7 @@ export function getRaritiesString(): string {
 // Get a formatted string of stat ranges for AI prompts
 export function getStatRangesString(): string {
   return `health: ${STAT_RANGES.HEALTH.min}-${STAT_RANGES.HEALTH.max}, ` +
-         `stamina: ${STAT_RANGES.STAMINA.min}-${STAT_RANGES.STAMINA.max}, ` +
          `attack: ${STAT_RANGES.ATTACK.min}-${STAT_RANGES.ATTACK.max}, ` +
-         `defense: ${STAT_RANGES.DEFENSE.min}-${STAT_RANGES.DEFENSE.max}, ` +
-         `speed: ${STAT_RANGES.SPEED.min}-${STAT_RANGES.SPEED.max}, ` +
          `manaCost: ${STAT_RANGES.MANA_COST.min}-${STAT_RANGES.MANA_COST.max}`;
 }
 
@@ -108,10 +105,11 @@ export function getCardTypeHexColor(cardType: CardType): string {
     [CardType.ARTIFACT]: '#FFD700', // Bright gold for artifacts
     [CardType.EQUIPMENT]: '#B0C4DE', // Lighter slate gray for equipment
     [CardType.LOCATION]: '#32CD32', // Lighter green for locations
-    [CardType.TOTEM]: '#CD853F', // Lighter brown for totems
+    [CardType.TOTEM]: '#8B4513', // Dark brown for totems
     [CardType.SUMMON]: '#FF7F50', // Lighter coral for summons
-    [CardType.ENTITY]: '#BA55D3', // Lighter medium purple for entities
+    [CardType.ENTITY]: '#00CED1', // Dark turquoise for entities
     [CardType.VEHICLE]: '#5F9EA0', // Lighter cadet blue for vehicles
+    [CardType.HIDDEN]: '#9932CC', // Dark orchid for hidden cards
     [CardType.ERROR]: '#FF4500', // Bright orange red for errors
   };
 
@@ -141,7 +139,7 @@ export function formatEffectDescription(description: string): string {
   // Stat colors
   const statColor = '#FF0000'; // Red for stats
   
-  // Format stats (health, stamina, etc.)
+  // Format stats (health, attack, manaCost, etc.)
   let formattedDesc = description;
   Object.keys(STAT_RANGES).forEach(stat => {
     const statName = stat.toLowerCase();
@@ -182,4 +180,53 @@ export function formatEffectDescription(description: string): string {
   });
   
   return formattedDesc;
+}
+
+/**
+ * Interpolate color between two hex colors based on value ratio
+ * @param value The current value
+ * @param min The minimum value
+ * @param max The maximum value
+ * @param startColor The starting hex color
+ * @param endColor The ending hex color
+ * @returns RGB color string
+ */
+export function interpolateColor(value: number, min: number, max: number, startColor: string, endColor: string): string {
+  const ratio = Math.max(0, Math.min(1, (value - min) / (max - min)));
+
+  const hexToRgb = (hex: string) => {
+    const bigint = parseInt(hex.replace('#', ''), 16);
+    return [ (bigint >> 16) & 255, (bigint >> 8) & 255, bigint & 255 ];
+  };
+
+  const [r1, g1, b1] = hexToRgb(startColor);
+  const [r2, g2, b2] = hexToRgb(endColor);
+
+  const r = Math.round(r1 + ratio * (r2 - r1));
+  const g = Math.round(g1 + ratio * (g2 - g1));
+  const b = Math.round(b1 + ratio * (b2 - b1));
+
+  return `rgb(${r},${g},${b})`;
+}
+
+/**
+ * Get color for health value based on min-max range
+ * @param hp The health value
+ * @param min The minimum health
+ * @param max The maximum health
+ * @returns RGB color string
+ */
+export function getHpColor(hp: number, min: number, max: number): string {
+  return interpolateColor(hp, min, max, '#1b5e20', '#ff0000');
+}
+
+/**
+ * Get color for attack value based on min-max range
+ * @param atk The attack value
+ * @param min The minimum attack
+ * @param max The maximum attack
+ * @returns RGB color string
+ */
+export function getAtkColor(atk: number, min: number, max: number): string {
+  return interpolateColor(atk, min, max, '#b0b0b0', '#8b0000');
 }

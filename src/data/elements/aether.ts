@@ -10,9 +10,6 @@ export const AETHER_ELEMENT = {
   commonEffects: ['spellcast', 'transform', 'mana_manipulation'],
   statBias: {
     health: -5,
-    attack: 5,
-    defense: 0,
-    speed: 5,
-    stamina: 15
+    attack: 5
   }
 };

@@ -22,10 +22,7 @@ export interface CardInstance {
   position: CardPosition | null; // null if in hand
   currentStats: {
     health: number;
-    stamina: number;
     attack: number;
-    defense: number;
-    speed: number;
   };
   activeEffects: {
     effectId: string;

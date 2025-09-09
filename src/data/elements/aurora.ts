@@ -10,9 +10,6 @@ export const AURORA_ELEMENT = {
   commonEffects: ['transform', 'charm', 'random_power'],
   statBias: {
     health: 0,
-    attack: 5,
-    defense: 5,
-    speed: 10,
-    stamina: 0
+    attack: 5
   }
 };

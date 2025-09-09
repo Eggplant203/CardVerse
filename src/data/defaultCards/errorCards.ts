@@ -14,10 +14,7 @@ export const CARD_GENERATION_ERROR: Card = {
   element: Element.VOID,
   stats: {
     health: 1,
-    stamina: 1,
     attack: 1,
-    defense: 1,
-    speed: 1,
     manaCost: 1
   },
   effects: [{
@@ -55,10 +52,7 @@ export const CHATBOT_OVERLOAD_ANALYSIS: AIAnalysisResult = {
   generatedLore: "When the threads of fate pull too strongly, even the wisest oracles can be consumed by the storm of possibilities.",
   suggestedStats: {
     health: 1,
-    stamina: 1,
     attack: 1,
-    defense: 1,
-    speed: 1,
     manaCost: 1
   },
   suggestedEffects: [{
@@ -83,10 +77,7 @@ export const API_ERROR_CARD: Card = {
   element: Element.VOID,
   stats: {
     health: 1,
-    stamina: 1,
     attack: 1,
-    defense: 1,
-    speed: 1,
     manaCost: 2
   },
   effects: [{
@@ -121,10 +112,7 @@ export const CHATBOT_OVERLOAD_ERROR: Card = {
   element: Element.STORM,
   stats: {
     health: 1,
-    stamina: 1,
     attack: 1,
-    defense: 1,
-    speed: 1,
     manaCost: 2
   },
   effects: [{
@@ -175,10 +163,7 @@ export function getImageAnalysisError(): AIAnalysisResult {
     generatedLore: "When crystal balls crack and scrying pools turn murky, these error visions manifest in the ether.",
     suggestedStats: {
       health: 1,
-      stamina: 1,
       attack: 1,
-      defense: 1,
-      speed: 1,
       manaCost: 1
     },
     suggestedEffects: [{

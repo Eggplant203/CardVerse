@@ -160,21 +160,15 @@ export function generateCard(
 
   // Create fallback stats in case suggestedStats is missing or incomplete
   const fallbackStats = {
-    health: 50,
-    stamina: 25,
-    attack: 25,
-    defense: 10,
-    speed: 10,
+    health: 6,
+    attack: 6,
     manaCost: 5
   };
   
   // Get stats with fallbacks for each property
   const stats = {
     health: analysisResult.suggestedStats?.health || fallbackStats.health,
-    stamina: analysisResult.suggestedStats?.stamina || fallbackStats.stamina,
     attack: analysisResult.suggestedStats?.attack || fallbackStats.attack,
-    defense: analysisResult.suggestedStats?.defense || fallbackStats.defense,
-    speed: analysisResult.suggestedStats?.speed || fallbackStats.speed,
     manaCost: analysisResult.suggestedStats?.manaCost || fallbackStats.manaCost
   };
   
@@ -229,9 +223,10 @@ export function generateCard(
     // Return a fallback card from centralized error cards
     const errorCard = getCardGenerationError();
     
-    // Preserve the custom name and imageUrl if provided
+    // Preserve the custom name if provided, but ALWAYS use error image
     if (customName) errorCard.name = customName;
-    if (imageUrl) errorCard.imageUrl = imageUrl;
+    // Always use error image, never preserve the original imageUrl when there's an error
+    errorCard.imageUrl = '/error_card.png';
     
     // Set the user ID
     errorCard.createdBy = userId;

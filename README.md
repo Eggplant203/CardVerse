@@ -94,12 +94,9 @@ Visit [http://localhost:3000](http://localhost:3000)
 
 ### Card Stats
 
-- ❤️ **HP**: Health points (1-100)
-- ⚡ **Stamina**: Action points (1-50)
-- 🗡️ **Attack**: Damage output (1-50)
-- 🛡️ **Defense**: Damage reduction (0-25)
-- 💨 **Speed**: Turn order (1-20)
-- 🔮 **Mana Cost**: Summon cost (1-10)
+- ❤️ **HP**: Health points (1-12)
+- 🗡️ **Attack**: Damage output (0-12)
+- 🔮 **Mana Cost**: Summon cost (0-10)
 
 ## 📁 Project Structure
 

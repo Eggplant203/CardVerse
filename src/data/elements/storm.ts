@@ -10,9 +10,6 @@ export const STORM_ELEMENT = {
   commonEffects: ['chain_lightning', 'haste', 'stun'],
   statBias: {
     health: -10,
-    attack: 10,
-    defense: -10,
-    speed: 20,
-    stamina: 5
+    attack: 10
   }
 };

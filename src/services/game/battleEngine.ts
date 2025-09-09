@@ -209,10 +209,7 @@ const generateOpponentDeck = (): Card[] => {
       stats: {
         manaCost: Math.floor(i / 5) + 1,
         attack: Math.floor(Math.random() * 5) + 1,
-        health: Math.floor(Math.random() * 5) + 2,
-        defense: Math.floor(Math.random() * 3),
-        speed: Math.floor(Math.random() * 3) + 1,
-        stamina: Math.floor(Math.random() * 5) + 3
+        health: Math.floor(Math.random() * 5) + 2
       },
       effects: [],
       lore: `Ancient lore of card ${i}`,
