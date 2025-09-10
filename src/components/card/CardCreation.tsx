@@ -92,7 +92,6 @@ const CardCreation: React.FC<CardCreationProps> = ({
               layout="fill"
               objectFit="contain"
               className="rounded"
-              unoptimized
             />
           </div>
         ) : (

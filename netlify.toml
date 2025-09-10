@@ -12,17 +12,6 @@
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
-# Ensure static assets are served correctly
-[build]
-  # Build command for Next.js
-  command = "npm run build"
-  # Publish directory for Next.js
-  publish = ".next"
-
-[build.environment]
-  # Node.js version
-  NODE_VERSION = "18"
-
 # Cache static assets
 [[headers]]
   for = "/_next/static/*"

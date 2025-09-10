@@ -490,8 +490,7 @@ const CreateCard: NextPage = () => {
                     alt="Preview" 
                     width={256}
                     height={256}
-                    className="mx-auto max-h-64 rounded"
-                    unoptimized
+                    className="mx-auto max-h-64 rounded" 
                   />
                   <p className="mt-2 text-gray-400">Click or drag to replace</p>
                 </div>
@@ -619,8 +618,7 @@ const CreateCard: NextPage = () => {
                           src={generatedCard.type === CardType.ERROR ? generatedCard.imageUrl! : uploadedImage!} 
                           alt="Card" 
                           fill
-                          className="absolute w-full h-full object-cover"
-                          unoptimized
+                          className="absolute w-full h-full object-cover" 
                         />
                         {/* Semi-transparent element overlay on top of the image */}
                         <div className="absolute inset-0 opacity-5" style={{ backgroundColor: getElementHexColor(generatedCard.element) }}></div>
@@ -696,8 +694,7 @@ const CreateCard: NextPage = () => {
                               src={uploadedImage} 
                               alt="Card" 
                               fill
-                              className="absolute w-full h-full object-contain"
-                              unoptimized
+                              className="absolute w-full h-full object-contain" 
                             />
                           </div>
                         )}
