@@ -500,7 +500,17 @@ const Collection: NextPage = () => {
                       <Button 
                         size="sm"
                         onClick={() => downloadCardAsJSON(selectedCard)}
-                        className="bg-blue-600 hover:bg-blue-700"
+                        disabled={selectedCard.rarity === Rarity.UNIQUE}
+                        className={`bg-blue-600 hover:bg-blue-700 ${
+                          selectedCard.rarity === Rarity.UNIQUE 
+                            ? 'opacity-50 cursor-not-allowed' 
+                            : ''
+                        }`}
+                        title={
+                          selectedCard.rarity === Rarity.UNIQUE 
+                            ? 'Unique cards cannot be downloaded' 
+                            : 'Download card as JSON file'
+                        }
                       >
                         Download Card
                       </Button>

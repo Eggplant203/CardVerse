@@ -366,12 +366,19 @@ const CreateCard: NextPage = () => {
       // Create a mapping from trigger names to hidden card keys
       const triggerMapping: Record<string, keyof typeof HIDDEN_CARDS> = {
         'EGGPLANT STUDIO': 'EGGPLANT_STUDIO',
+        '?': 'MYSTERY',
+        '∅': 'NULL'
+      };
+
+      // Create a mapping from display names to hidden card keys
+      const displayNameMapping: Record<string, keyof typeof HIDDEN_CARDS> = {
+        'EGGPLANT OVERLORD': 'EGGPLANT_STUDIO',
         '???': 'MYSTERY',
         'NULL': 'NULL'
       };
 
-      // Check if the entered name matches any trigger
-      const hiddenCardKey = triggerMapping[upperCardName];
+      // Check if the entered name matches any trigger or display name
+      const hiddenCardKey = triggerMapping[upperCardName] || displayNameMapping[upperCardName];
 
       if (hiddenCardKey && HIDDEN_CARDS[hiddenCardKey]) {
         // Check if user already has this unique card
@@ -406,7 +413,10 @@ const CreateCard: NextPage = () => {
         // Create mapping for success messages
         const successMessages: Record<string, string> = {
           'EGGPLANT STUDIO': '🎉 Congratulations! You found the Easter Egg! The Eggplant Overlord has joined your collection!',
+          'EGGPLANT OVERLORD': '🎉 Congratulations! You found the Easter Egg! The Eggplant Overlord has joined your collection!',
+          '?': '❓ MYSTERY UNLOCKED! The enigmatic ??? has appeared! What secrets does it hold?',
           '???': '❓ MYSTERY UNLOCKED! The enigmatic ??? has appeared! What secrets does it hold?',
+          '∅': '🕳️ VOID AWAKENED! Null has emerged from the emptiness! All effects tremble before it!',
           'NULL': '🕳️ VOID AWAKENED! Null has emerged from the emptiness! All effects tremble before it!'
         };
 
@@ -643,14 +653,17 @@ const CreateCard: NextPage = () => {
                         <div className="text-gray-300 text-sm">
                           <span className="text-gray-500">Rarity:</span> <span className={`capitalize font-bold ${getRarityTextColor(generatedCard.rarity)}`}>{generatedCard.rarity}</span>
                         </div>
+                        <div className="text-gray-300 text-sm">
+                          <span className="text-gray-500">Mana:</span> <span className="font-bold text-blue-400">{generatedCard.stats.manaCost}</span>
+                        </div>
                       </div>
                       
                       <div className="stats grid grid-cols-2 gap-2 mb-4">
                         <div className="text-white text-sm">
-                          HP: {generatedCard.stats.health}
+                          HP: <span className="font-bold text-red-400">{generatedCard.stats.health}</span>
                         </div>
                         <div className="text-white text-sm">
-                          ATK: {generatedCard.stats.attack}
+                          ATK: <span className="font-bold text-orange-400">{generatedCard.stats.attack}</span>
                         </div>
                       </div>
                       
@@ -742,16 +755,20 @@ const CreateCard: NextPage = () => {
                             <h4 className="text-gray-400 text-sm">Rarity</h4>
                             <p className={`capitalize font-bold ${getRarityTextColor(generatedCard.rarity)}`}>{generatedCard.rarity}</p>
                           </div>
+                          <div>
+                            <h4 className="text-gray-400 text-sm">Mana Cost</h4>
+                            <p className="text-blue-400 font-bold">{generatedCard.stats.manaCost}</p>
+                          </div>
                         </div>
                         
                         <div className="grid grid-cols-2 gap-4 mb-4">
                           <div>
                             <h4 className="text-gray-400 text-sm">Health</h4>
-                            <p className="text-white">{generatedCard.stats.health}</p>
+                            <p className="text-red-400 font-bold">{generatedCard.stats.health}</p>
                           </div>
                           <div>
                             <h4 className="text-gray-400 text-sm">Attack</h4>
-                            <p className="text-white">{generatedCard.stats.attack}</p>
+                            <p className="text-orange-400 font-bold">{generatedCard.stats.attack}</p>
                           </div>
                         </div>
                         
