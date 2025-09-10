@@ -98,8 +98,18 @@ const ProfileModal: React.ComponentType<ProfileModalProps> = ({ isOpen, onClose 
     setIsLoadingStats(true);
     try {
       const response = await axios.get('/api/user/statistics');
+      
       if (response.data) {
-        setStatistics(response.data);
+        // Get decks count from localStorage
+        const isGuest = !user || user.id.startsWith('guest-');
+        const decksKey = isGuest ? 'cardverse_guest_decks' : 'ai_card_game_decks';
+        const storedDecks = localStorage.getItem(decksKey);
+        const decksCount = storedDecks ? JSON.parse(storedDecks).length : 0;
+        
+        setStatistics({
+          ...response.data,
+          decksBuilt: decksCount
+        });
       }
     } catch (error) {
       console.error('Failed to fetch user statistics:', error);

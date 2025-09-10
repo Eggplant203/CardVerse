@@ -8,13 +8,8 @@ import Button from '@/components/ui/Button';
 import { Card as CardType } from '@/types/card';
 import { CardAPI } from '@/services/api/cardAPI';
 import { useAuth } from '@/context/AuthContext';
-
-interface Deck {
-  id: string;
-  name: string;
-  cards: CardType[];
-  coverCard?: CardType;
-}
+import { getAllDecks, saveDeck, deleteDeck } from '@/services/storage/deckStorage';
+import { Deck } from '@/types/player';
 
 const Decks: NextPage = () => {
   const auth = useAuth();
@@ -27,24 +22,58 @@ const Decks: NextPage = () => {
   const [isLoadingDecks, setIsLoadingDecks] = useState<boolean>(true);
 
   useEffect(() => {
-    // Load the user's card collection and decks from storage
+    // Load existing decks from storage and user's card collection
     const loadData = async () => {
       setIsLoadingDecks(true);
+      
+      // Load existing decks from storage
+      const existingDecks = getAllDecks(auth.isGuestMode);
+      if (existingDecks.length > 0) {
+        setDecks(existingDecks);
+      }
+      
       try {
         const result = await CardAPI.getUserCards(auth.user?.id || null, auth.isGuestMode);
         if (result.success && result.data) {
           setCards(result.data);
           
-          // For now, create a sample deck if none exists
-          // In a real app, this would be loaded from storage
-          if (decks.length === 0) {
-            const sampleDeck: Deck = {
-              id: 'sample-deck-1',
-              name: 'My First Deck',
-              cards: result.data.slice(0, 5), // First 5 cards
-              coverCard: result.data[0]
-            };
-            setDecks([sampleDeck]);
+          if (existingDecks.length > 0) {
+            // Update existing decks with new cards if needed
+            const updatedDecks = existingDecks.map(deck => {
+              if (deck.name === 'My First Deck' && deck.cards.length < 30 && result.data) {
+                // Auto-update My First Deck with new cards until it reaches 30
+                const currentCardIds = new Set(deck.cards.map(c => c.id));
+                const newCards = result.data.filter(card => !currentCardIds.has(card.id));
+                const cardsToAdd = newCards.slice(0, 30 - deck.cards.length);
+                const updatedCards = [...deck.cards, ...cardsToAdd];
+                
+                const updatedDeck: Deck = {
+                  ...deck,
+                  cards: updatedCards,
+                  coverCard: updatedCards[0] || deck.coverCard
+                };
+                
+                // Save the updated deck
+                saveDeck(updatedDeck, auth.isGuestMode);
+                
+                return updatedDeck;
+              }
+              return deck;
+            });
+            setDecks(updatedDecks);
+          } else {
+            // Create a sample deck if none exists
+            if (result.data && result.data.length > 0) {
+              const sampleDeck: Deck = {
+                id: 'sample-deck-1',
+                name: 'My First Deck',
+                cards: result.data.slice(0, Math.min(30, result.data.length)), // Take up to 30 cards
+                coverCard: result.data[0]
+              };
+              setDecks([sampleDeck]);
+              // Save the sample deck
+              saveDeck(sampleDeck, auth.isGuestMode);
+            }
           }
         } else {
           setCards([]);
@@ -58,7 +87,7 @@ const Decks: NextPage = () => {
     };
 
     loadData();
-  }, [auth.isGuestMode, auth.user?.id, decks.length]);
+  }, [auth.isGuestMode, auth.user?.id]);
 
   const handleCreateDeck = () => {
     setSelectedDeck(null);
@@ -83,6 +112,8 @@ const Decks: NextPage = () => {
     if (selectedDeck?.id === deckId) {
       setSelectedDeck(null);
     }
+    // Delete from storage
+    deleteDeck(deckId, auth.isGuestMode);
   };
 
   const toggleCardInDeck = (card: CardType) => {
@@ -103,7 +134,7 @@ const Decks: NextPage = () => {
       id: selectedDeck?.id || `deck-${Date.now()}`,
       name: editingDeckName,
       cards: selectedCards,
-      coverCard: selectedCards[0]
+      coverCard: selectedCards[0] || null
     };
 
     if (selectedDeck) {
@@ -113,6 +144,9 @@ const Decks: NextPage = () => {
       // Add new deck
       setDecks([...decks, deckToSave]);
     }
+
+    // Save to storage
+    saveDeck(deckToSave, auth.isGuestMode);
 
     setIsEditing(false);
     setSelectedDeck(deckToSave);
