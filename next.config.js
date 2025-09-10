@@ -14,8 +14,10 @@ const nextConfig = {
       },
     ],
     dangerouslyAllowSVG: true,
-    // Remove contentDispositionType and contentSecurityPolicy that might interfere with image display
+    unoptimized: true, // Enable unoptimized images for static assets
   },
+  // Ensure static assets are properly handled
+  assetPrefix: process.env.NODE_ENV === 'production' ? '' : '',
 }
 
 export default nextConfig

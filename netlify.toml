@@ -12,6 +12,62 @@
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
+# Redirect static assets to ensure they are served correctly
+[[redirects]]
+  from = "/error_card.png"
+  to = "/error_card.png"
+  status = 200
+
+[[redirects]]
+  from = "/null_card.png"
+  to = "/null_card.png"
+  status = 200
+
+[[redirects]]
+  from = "/eggplant_card.png"
+  to = "/eggplant_card.png"
+  status = 200
+
+[[redirects]]
+  from = "/question_mark_card.jpg"
+  to = "/question_mark_card.jpg"
+  status = 200
+
+[[redirects]]
+  from = "/card-example-1.jpg"
+  to = "/card-example-1.jpg"
+  status = 200
+
+[[redirects]]
+  from = "/card-example-2.jpg"
+  to = "/card-example-2.jpg"
+  status = 200
+
+[[redirects]]
+  from = "/default-avatar.png"
+  to = "/default-avatar.png"
+  status = 200
+
+[[redirects]]
+  from = "/favicon.ico"
+  to = "/favicon.ico"
+  status = 200
+
+[[redirects]]
+  from = "/favicon-16x16.png"
+  to = "/favicon-16x16.png"
+  status = 200
+
+[[redirects]]
+  from = "/favicon-32x32.png"
+  to = "/favicon-32x32.png"
+  status = 200
+
+[[redirects]]
+  from = "/manifest.json"
+  to = "/manifest.json"
+  status = 200
+
 # Cache static assets
 [[headers]]
   for = "/_next/static/*"
