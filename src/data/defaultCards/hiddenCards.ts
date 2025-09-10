@@ -4,14 +4,14 @@ import { Card, CardType, Rarity, Element, EffectType, EffectCategory, TargetType
 export const EGGPLANT_STUDIO_CARD: Card = {
   id: 'eggplant-studio-hidden',
   name: 'Eggplant Overlord',
-  imageUrl: '/eggplant_card.png', // Using the eggplant_card.png from public folder
+  imageUrl: '/eggplant_card.png',
   rarity: Rarity.UNIQUE,
   type: CardType.HIDDEN,
   element: Element.FLORA,
   stats: {
-    health: 10,
-    attack: 7,
-    manaCost: 8
+    health: 12,
+    attack: 8,
+    manaCost: 10, // tăng thành 10 mana
   },
   effects: [
     {
@@ -19,30 +19,52 @@ export const EGGPLANT_STUDIO_CARD: Card = {
       name: 'Eggplant Domination',
       type: EffectType.BUFF,
       category: EffectCategory.STAT_MODIFICATION,
-      duration: 2, // Changed from permanent to 2 turns
-      magnitude: 3, // Changed from 5 to 3 ATK
+      duration: 2,
+      magnitude: 3,
       target: TargetType.SELF,
       condition: 'When this card is played',
-      description: 'Increases attack by 3 and health by 2 for 2 turns. All your creatures gain +1 attack for 2 turns.'
+      description: 'Gains +3 attack and +2 health for 2 turns.'
     },
     {
       id: 'mystical-harvest',
       name: 'Mystical Harvest',
       type: EffectType.TRIGGER,
       category: EffectCategory.HEALING,
-      duration: 1,
-      magnitude: 2, // Changed from 4 to 2 healing
+      duration: 3,
+      magnitude: 2,
       target: TargetType.ALLY_ALL,
       condition: 'At the start of your turn',
-      description: 'Heals all your cards for 2 health at the start of each turn.'
+      description: 'Heals all allies by 2 health for 3 turns.'
+    },
+    {
+      id: 'vegetable-blessing',
+      name: 'Vegetable Blessing',
+      type: EffectType.BUFF,
+      category: EffectCategory.STAT_MODIFICATION,
+      duration: 2,
+      magnitude: 1,
+      target: TargetType.ALLY_ALL,
+      condition: 'When this card is played',
+      description: 'All your creatures gain +1 attack for 2 turns.'
+    },
+    {
+      id: 'eggplant-rebirth',
+      name: 'Eggplant Rebirth',
+      type: EffectType.REVIVE,
+      category: EffectCategory.REVIVAL,
+      duration: 1,
+      magnitude: 1,
+      target: TargetType.SELF,
+      condition: 'When this card dies',
+      description: 'Revives once with 6 health. Can only trigger one time.'
     }
   ],
-  description: 'The legendary Eggplant Overlord has risen! This mystical vegetable commands the forces of nature with unparalleled power. Its purple aura brings fortune to all who serve it.',
-  lore: 'In the ancient gardens of Eggplant Studio, a humble eggplant was touched by the gods of creation. Now it rules over all with its vegetable wisdom and overwhelming cuteness.',
-  createdAt: new Date,
+  description: 'The ultimate form of Eggplant Overlord, demanding 10 mana to summon. Its powers combine healing, blessing, domination, and even resurrection.',
+  lore: 'Legends say that in Eggplant Studio\'s secret garden, the Overlord never truly dies—it sprouts anew, stronger and brighter.',
+  createdAt: new Date(),
   createdBy: 'Eggplant Studio',
-  mood: 'mystical, powerful, cute',
-  complexity: 100,
+  mood: 'mystical, powerful, eternal',
+  complexity: 120,
   dominantColors: ['#8B4513', '#9370DB', '#228B22']
 };
 
