@@ -217,7 +217,7 @@ export function interpolateColor(value: number, min: number, max: number, startC
  * @returns RGB color string
  */
 export function getHpColor(hp: number, min: number, max: number): string {
-  return interpolateColor(hp, min, max, '#1b5e20', '#ff0000');
+  return interpolateColor(hp, min, max, '#66bb6a', '#ff4444');
 }
 
 /**
@@ -228,5 +228,5 @@ export function getHpColor(hp: number, min: number, max: number): string {
  * @returns RGB color string
  */
 export function getAtkColor(atk: number, min: number, max: number): string {
-  return interpolateColor(atk, min, max, '#b0b0b0', '#8b0000');
+  return interpolateColor(atk, min, max, '#8b4513', '#d3d3d3');
 }

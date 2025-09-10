@@ -1,4 +1,4 @@
-import { Card } from '@/types/card';
+import { Card, Rarity } from '@/types/card';
 import { ApiResponse, CardGenerationRequest } from '@/types/api';
 import { saveCard, deleteCard, getAllCards } from '../storage/cardStorage';
 import axios from 'axios';
@@ -92,9 +92,9 @@ export class CardAPI {
   }
 
   /**
-   * Check if user already has a specific hidden card
+   * Check if user already has a specific unique card
    */
-  public static async hasHiddenCard(userId: string | null, hiddenCardName: string, isGuest: boolean = false): Promise<ApiResponse<boolean>> {
+  public static async hasUniqueCard(userId: string | null, uniqueCardName: string, isGuest: boolean = false): Promise<ApiResponse<boolean>> {
     try {
       // First get all user's cards
       const cardsResult = await this.getUserCards(userId, isGuest);
@@ -111,9 +111,9 @@ export class CardAPI {
 
       const userCards = cardsResult.data || [];
 
-      // Check if user already has this hidden card
+      // Check if user already has this unique card
       const hasCard = userCards.some(card =>
-        card.type === 'hidden' && card.name.toUpperCase() === hiddenCardName.toUpperCase()
+        card.rarity === Rarity.UNIQUE && card.name.toUpperCase() === uniqueCardName.toUpperCase()
       );
 
       return {
@@ -121,11 +121,11 @@ export class CardAPI {
         data: hasCard
       };
     } catch (error) {
-      console.error('Error checking for duplicate hidden card:', error);
+      console.error('Error checking for duplicate unique card:', error);
       return {
         success: false,
         error: {
-          message: 'Failed to check for duplicate hidden card',
+          message: 'Failed to check for duplicate unique card',
           code: 'CHECK_ERROR',
         },
       };

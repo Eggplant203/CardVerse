@@ -243,7 +243,8 @@ const Decks: NextPage = () => {
                         alt={deck.name}
                         width={200}
                         height={160}
-                        className="w-full h-full object-cover" 
+                        className="w-full h-full object-cover"
+                        unoptimized
                       />
                     ) : (
                       <div className="text-gray-500">No cover card</div>

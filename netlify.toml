@@ -12,23 +12,16 @@
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
-# Security headers
-[[headers]]
-  for = "/*"
-  [headers.values]
-    X-Frame-Options = "DENY"
-    X-XSS-Protection = "1; mode=block"
-    X-Content-Type-Options = "nosniff"
-    Referrer-Policy = "strict-origin-when-cross-origin"
+# Ensure static assets are served correctly
+[build]
+  # Build command for Next.js
+  command = "npm run build"
+  # Publish directory for Next.js
+  publish = ".next"
 
-# Security headers
-[[headers]]
-  for = "/*"
-  [headers.values]
-    X-Frame-Options = "DENY"
-    X-XSS-Protection = "1; mode=block"
-    X-Content-Type-Options = "nosniff"
-    Referrer-Policy = "strict-origin-when-cross-origin"
+[build.environment]
+  # Node.js version
+  NODE_VERSION = "18"
 
 # Cache static assets
 [[headers]]
@@ -36,8 +29,28 @@
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
-# Cache images and other assets
+# Cache images and other static files from public folder
 [[headers]]
-  for = "/public/*"
+  for = "/*.png"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"
+
+[[headers]]
+  for = "/*.jpg"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"
+
+[[headers]]
+  for = "/*.jpeg"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"
+
+[[headers]]
+  for = "/*.svg"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"
+
+[[headers]]
+  for = "/*.ico"
   [headers.values]
     Cache-Control = "public, max-age=86400"

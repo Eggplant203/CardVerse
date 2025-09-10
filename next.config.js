@@ -14,8 +14,7 @@ const nextConfig = {
       },
     ],
     dangerouslyAllowSVG: true,
-    contentDispositionType: 'attachment',
-    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    // Remove contentDispositionType and contentSecurityPolicy that might interfere with image display
   },
 }
 

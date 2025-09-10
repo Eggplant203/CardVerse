@@ -11,7 +11,7 @@ jest.mock('uuid', () => ({
 jest.mock('@/services/api/cardAPI', () => ({
   CardAPI: {
     saveCard: jest.fn(),
-    hasHiddenCard: jest.fn()
+    hasUniqueCard: jest.fn()
   }
 }));
 
@@ -253,8 +253,8 @@ describe('Easter Egg Logic', () => {
     expect(hasDuplicate).toBe(false);
   });
 
-  it('should handle API error when checking for duplicate hidden cards', () => {
+  it('should handle API error when checking for duplicate unique cards', () => {
     // This test verifies that the API method exists and can be mocked
-    expect(typeof CardAPI.hasHiddenCard).toBe('function');
+    expect(typeof CardAPI.hasUniqueCard).toBe('function');
   });
 });

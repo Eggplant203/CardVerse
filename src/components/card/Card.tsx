@@ -108,7 +108,7 @@ const Card: React.FC<CardProps> = ({
               style={{ objectFit: 'cover' }}
               className="card-image"
               priority
-              unoptimized={card.imageUrl.startsWith('data:')} // Use unoptimized for base64 images
+              unoptimized // Disable optimization for static export compatibility
             />
             {/* Semi-transparent element overlay on top of the image */}
             <div className="absolute inset-0 opacity-5" style={{ backgroundColor: getElementColor(card.element) }}></div>

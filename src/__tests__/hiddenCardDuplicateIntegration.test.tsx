@@ -15,20 +15,20 @@ jest.mock('@/services/storage/cardStorage', () => ({
 
 import { getAllCards } from '@/services/storage/cardStorage';
 
-describe('Hidden Card Duplicate Prevention Integration', () => {
+describe('Unique Card Duplicate Prevention Integration', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it('should successfully check for existing hidden cards', async () => {
-    // Mock existing cards with a hidden card
+  it('should successfully check for existing unique cards', async () => {
+    // Mock existing cards with a unique card
     (getAllCards as jest.Mock).mockReturnValue([
       {
         id: 'existing-mystery',
         name: '???',
-        type: CardType.HIDDEN,
+        type: CardType.CREATURE,
         element: Element.VOID,
-        rarity: Rarity.MYTHIC,
+        rarity: Rarity.UNIQUE,
         stats: { health: 7, attack: 12, manaCost: 8 },
         effects: [],
         description: 'Mystery card',
@@ -60,14 +60,14 @@ describe('Hidden Card Duplicate Prevention Integration', () => {
     ]);
 
     // Test checking for existing mystery card
-    const result = await CardAPI.hasHiddenCard('user-id', '???', true);
+    const result = await CardAPI.hasUniqueCard('user-id', '???', true);
 
     expect(result.success).toBe(true);
     expect(result.data).toBe(true); // Should find the existing ??? card
   });
 
-  it('should return false when hidden card does not exist', async () => {
-    // Mock existing cards without the hidden card
+  it('should return false when unique card does not exist', async () => {
+    // Mock existing cards without the unique card
     (getAllCards as jest.Mock).mockReturnValue([
       {
         id: 'normal-card-1',
@@ -106,19 +106,19 @@ describe('Hidden Card Duplicate Prevention Integration', () => {
     ]);
 
     // Test checking for non-existing mystery card
-    const result = await CardAPI.hasHiddenCard('user-id', '???', true);
+    const result = await CardAPI.hasUniqueCard('user-id', '???', true);
 
     expect(result.success).toBe(true);
     expect(result.data).toBe(false); // Should not find the ??? card
   });
 
-  it('should handle case-insensitive hidden card name matching', async () => {
-    // Mock existing cards with mixed case hidden card
+  it('should handle case-insensitive unique card name matching', async () => {
+    // Mock existing cards with mixed case unique card
     (getAllCards as jest.Mock).mockReturnValue([
       {
         id: 'existing-null',
         name: 'null', // lowercase
-        type: CardType.HIDDEN,
+        type: CardType.CREATURE,
         element: Element.VOID,
         rarity: Rarity.UNIQUE,
         stats: { health: 15, attack: 5, manaCost: 6 },
@@ -135,9 +135,9 @@ describe('Hidden Card Duplicate Prevention Integration', () => {
     ]);
 
     // Test checking with different cases
-    const result1 = await CardAPI.hasHiddenCard('user-id', 'NULL', true);
-    const result2 = await CardAPI.hasHiddenCard('user-id', 'null', true);
-    const result3 = await CardAPI.hasHiddenCard('user-id', 'Null', true);
+    const result1 = await CardAPI.hasUniqueCard('user-id', 'NULL', true);
+    const result2 = await CardAPI.hasUniqueCard('user-id', 'null', true);
+    const result3 = await CardAPI.hasUniqueCard('user-id', 'Null', true);
 
     expect(result1.success).toBe(true);
     expect(result1.data).toBe(true);

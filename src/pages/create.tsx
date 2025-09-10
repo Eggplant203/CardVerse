@@ -374,13 +374,13 @@ const CreateCard: NextPage = () => {
       const hiddenCardKey = triggerMapping[upperCardName];
 
       if (hiddenCardKey && HIDDEN_CARDS[hiddenCardKey]) {
-        // Check if user already has this hidden card
-        const hasCardResult = await CardAPI.hasHiddenCard(auth.user?.id || null, HIDDEN_CARDS[hiddenCardKey].name, auth.isGuestMode);
+        // Check if user already has this unique card
+        const hasCardResult = await CardAPI.hasUniqueCard(auth.user?.id || null, HIDDEN_CARDS[hiddenCardKey].name, auth.isGuestMode);
 
         if (hasCardResult.success && hasCardResult.data) {
-          // User already has this hidden card
+          // User already has this unique card
           setSaveStatus({
-            message: `❌ You already have "${HIDDEN_CARDS[hiddenCardKey].name}" in your collection! Each hidden card can only be obtained once.`,
+            message: `❌ You already have "${HIDDEN_CARDS[hiddenCardKey].name}" in your collection! Each unique card can only be obtained once.`,
             type: 'error'
           });
           setIsSavingCard(false);
@@ -490,7 +490,8 @@ const CreateCard: NextPage = () => {
                     alt="Preview" 
                     width={256}
                     height={256}
-                    className="mx-auto max-h-64 rounded" 
+                    className="mx-auto max-h-64 rounded"
+                    unoptimized
                   />
                   <p className="mt-2 text-gray-400">Click or drag to replace</p>
                 </div>
@@ -618,7 +619,8 @@ const CreateCard: NextPage = () => {
                           src={generatedCard.type === CardType.ERROR ? generatedCard.imageUrl! : uploadedImage!} 
                           alt="Card" 
                           fill
-                          className="absolute w-full h-full object-cover" 
+                          className="absolute w-full h-full object-cover"
+                          unoptimized
                         />
                         {/* Semi-transparent element overlay on top of the image */}
                         <div className="absolute inset-0 opacity-5" style={{ backgroundColor: getElementHexColor(generatedCard.element) }}></div>
@@ -694,7 +696,8 @@ const CreateCard: NextPage = () => {
                               src={uploadedImage} 
                               alt="Card" 
                               fill
-                              className="absolute w-full h-full object-contain" 
+                              className="absolute w-full h-full object-contain"
+                              unoptimized
                             />
                           </div>
                         )}
