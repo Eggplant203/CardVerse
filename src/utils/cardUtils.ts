@@ -230,3 +230,39 @@ export function getHpColor(hp: number, min: number, max: number): string {
 export function getAtkColor(atk: number, min: number, max: number): string {
   return interpolateColor(atk, min, max, '#8b4513', '#d3d3d3');
 }
+
+/**
+ * Validate and clamp stats to ensure they are within STAT_RANGES
+ * Only allows health, attack, manaCost stats, ignores others
+ * @param suggestedStats The stats object from AI response
+ * @returns Validated stats object with clamped values
+ */
+export function validateAndClampStats(suggestedStats: any): { health: number; attack: number; manaCost: number } {
+  const validatedStats = {
+    health: STAT_RANGES.HEALTH.min,
+    attack: STAT_RANGES.ATTACK.min,
+    manaCost: STAT_RANGES.MANA_COST.min
+  };
+
+  // Only process the allowed stats
+  if (suggestedStats && typeof suggestedStats === 'object') {
+    // Health
+    if (typeof suggestedStats.health === 'number') {
+      validatedStats.health = Math.max(STAT_RANGES.HEALTH.min, Math.min(STAT_RANGES.HEALTH.max, suggestedStats.health));
+    }
+
+    // Attack
+    if (typeof suggestedStats.attack === 'number') {
+      validatedStats.attack = Math.max(STAT_RANGES.ATTACK.min, Math.min(STAT_RANGES.ATTACK.max, suggestedStats.attack));
+    }
+
+    // Mana Cost
+    if (typeof suggestedStats.manaCost === 'number') {
+      validatedStats.manaCost = Math.max(STAT_RANGES.MANA_COST.min, Math.min(STAT_RANGES.MANA_COST.max, suggestedStats.manaCost));
+    }
+
+    // Ignore any other stats like speed, stamina, etc.
+  }
+
+  return validatedStats;
+}
