@@ -667,9 +667,7 @@ const CreateCard: NextPage = () => {
                         </div>
                       </div>
                       
-                      <p className="text-gray-300 text-xs leading-relaxed">
-                        {generatedCard.description}
-                      </p>
+                      <p className="text-gray-300 text-xs leading-relaxed" dangerouslySetInnerHTML={{ __html: formatEffectDescription(generatedCard.description) }}></p>
                       
                       {/* View Details Button */}
                       <button 
@@ -775,7 +773,7 @@ const CreateCard: NextPage = () => {
                         
                         <div className="mb-4">
                           <h4 className="text-gray-400 text-sm mb-2">Description</h4>
-                          <p className="text-white leading-relaxed">{generatedCard.description}</p>
+                          <p className="text-white leading-relaxed" dangerouslySetInnerHTML={{ __html: formatEffectDescription(generatedCard.description) }}></p>
                         </div>
                         
                         {generatedCard.effects && generatedCard.effects.length > 0 && (

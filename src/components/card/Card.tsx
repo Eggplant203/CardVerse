@@ -3,7 +3,7 @@ import type { Card as CardType } from '@/types/card';
 import { Rarity, Element, CardType as CardTypeEnum, STAT_RANGES } from '@/types/card';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { getElementHexColor, getCardTypeHexColor, getHpColor, getAtkColor } from '@/utils/cardUtils';
+import { getElementHexColor, getCardTypeHexColor, getHpColor, getAtkColor, formatEffectDescription } from '@/utils/cardUtils';
 
 interface CardProps {
   card: CardType;
@@ -144,7 +144,7 @@ const Card: React.FC<CardProps> = ({
               {card.element} {elementProperties[card.element]?.icon}
             </span>
           </div>
-          <p className="text-white text-opacity-80">{card.description}</p>
+          <p className="text-white text-opacity-80" dangerouslySetInnerHTML={{ __html: formatEffectDescription(card.description) }}></p>
         </div>
       )}
       

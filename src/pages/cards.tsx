@@ -397,7 +397,7 @@ const Collection: NextPage = () => {
                   
                   <div className="mb-4">
                     <div className="text-gray-400 text-sm">Description</div>
-                    <div className="text-white text-sm">{selectedCard.description}</div>
+                    <div className="text-white text-sm" dangerouslySetInnerHTML={{ __html: formatEffectDescription(selectedCard.description) }}></div>
                   </div>
 
                   <div className="mb-4">

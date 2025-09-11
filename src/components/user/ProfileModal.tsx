@@ -16,6 +16,15 @@ const ProfileModal: React.ComponentType<ProfileModalProps> = ({ isOpen, onClose 
   const router = useRouter();
   const [displayName, setDisplayName] = useState(user?.displayName || '');
   const [avatarUrl, setAvatarUrl] = useState(user?.avatarUrl || '');
+  const [originalAvatarUrl, setOriginalAvatarUrl] = useState(user?.avatarUrl || '');
+  const [originalDisplayName, setOriginalDisplayName] = useState(user?.displayName || '');
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [hideUsername, setHideUsername] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('hideUsername') === 'true';
+    }
+    return false;
+  });
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -83,9 +92,31 @@ const ProfileModal: React.ComponentType<ProfileModalProps> = ({ isOpen, onClose 
   React.useEffect(() => {
     if (user) {
       setDisplayName(user.displayName);
+      setOriginalDisplayName(user.displayName);
       setAvatarUrl(user.avatarUrl || '');
+      setOriginalAvatarUrl(user.avatarUrl || '');
+      setHasUnsavedChanges(false);
     }
   }, [user]);
+
+  const handleClose = () => {
+    if (hasUnsavedChanges) {
+      const confirmClose = window.confirm('You have unsaved changes. Are you sure you want to close without saving?');
+      if (!confirmClose) return;
+    }
+    onClose();
+  };
+
+  // Save hideUsername setting to localStorage
+  React.useEffect(() => {
+    localStorage.setItem('hideUsername', hideUsername.toString());
+  }, [hideUsername]);
+
+  // Track unsaved changes
+  React.useEffect(() => {
+    const hasChanges = displayName !== originalDisplayName || avatarUrl !== originalAvatarUrl;
+    setHasUnsavedChanges(hasChanges);
+  }, [displayName, avatarUrl, originalDisplayName, originalAvatarUrl]);
 
   // Fetch user statistics when modal opens
   React.useEffect(() => {
@@ -130,6 +161,9 @@ const ProfileModal: React.ComponentType<ProfileModalProps> = ({ isOpen, onClose 
       });
 
       setIsEditing(false);
+      setHasUnsavedChanges(false);
+      setOriginalAvatarUrl(avatarUrl);
+      setOriginalDisplayName(displayName);
     } catch (err: unknown) {
       const error = err as { message?: string };
       setError(error.message || 'Failed to update profile');
@@ -181,6 +215,7 @@ const ProfileModal: React.ComponentType<ProfileModalProps> = ({ isOpen, onClose 
 
       // Update avatar URL
       setAvatarUrl(compressedBase64);
+      setHasUnsavedChanges(true);
     } catch (err: unknown) {
       const error = err as { message?: string };
       setError(error.message || 'Failed to process image');
@@ -359,7 +394,14 @@ const ProfileModal: React.ComponentType<ProfileModalProps> = ({ isOpen, onClose 
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-between items-center p-4 border-b border-gray-700">
-              <h2 className="text-xl font-bold text-white">Profile Settings</h2>
+              <div className="flex items-center space-x-2">
+                <h2 className="text-xl font-bold text-white">Profile Settings</h2>
+                {hasUnsavedChanges && (
+                  <span className="text-xs bg-yellow-500 text-black px-2 py-1 rounded-full font-semibold">
+                    Unsaved Changes
+                  </span>
+                )}
+              </div>
               <div className="flex space-x-2">
                 {isEditing ? (
                   <>
@@ -387,7 +429,7 @@ const ProfileModal: React.ComponentType<ProfileModalProps> = ({ isOpen, onClose 
                   </button>
                 )}
                 <button
-                  onClick={onClose}
+                  onClick={handleClose}
                   className="text-gray-400 hover:text-white"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -462,7 +504,25 @@ const ProfileModal: React.ComponentType<ProfileModalProps> = ({ isOpen, onClose 
                   )}
 
                   <div className="text-sm text-gray-400">
-                    <div>Username: {user.username}</div>
+                    <div className="flex items-center space-x-2">
+                      <span>Username: {hideUsername ? '•••••••••••' : user.username}</span>
+                      <button
+                        onClick={() => setHideUsername(!hideUsername)}
+                        className="text-gray-500 hover:text-gray-300 transition-colors"
+                        title={hideUsername ? 'Show username' : 'Hide username'}
+                      >
+                        {hideUsername ? (
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          </svg>
+                        ) : (
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+                          </svg>
+                        )}
+                      </button>
+                    </div>
                     <div className="flex items-center space-x-2">
                       <span className="break-words max-w-full">
                         Email: {showEmail ? (
@@ -470,7 +530,7 @@ const ProfileModal: React.ComponentType<ProfileModalProps> = ({ isOpen, onClose 
                             <span className="hidden sm:inline">{user.email}</span>
                             <span className="sm:hidden">{truncateEmail(user.email)}</span>
                           </>
-                        ) : '••••••••••••••••'}
+                        ) : '•••••••••••••••'}
                       </span>
                       <button
                         onClick={() => setShowEmail(!showEmail)}

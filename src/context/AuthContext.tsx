@@ -190,11 +190,34 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
               // Set auth header with new token
               axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
 
-              // Load user data
-              const userData = JSON.parse(storedUser) as UserProfile;
-              setUser(userData);
-              setIsAuthenticated(true);
-              setIsGuestMode(false);
+              // Fetch fresh user profile from server instead of using stored data
+              try {
+                const profileResponse = await axios.get('/api/user/profile');
+                if (profileResponse.data.success) {
+                  const freshUserData = profileResponse.data.data;
+                  
+                  // Update stored user data with fresh data
+                  localStorage.setItem(USER_KEY, JSON.stringify(freshUserData));
+                  if (sessionUser) {
+                    sessionStorage.setItem(USER_KEY, JSON.stringify(freshUserData));
+                  }
+                  
+                  setUser(freshUserData);
+                  setIsAuthenticated(true);
+                  setIsGuestMode(false);
+                  
+                  console.log('✅ User profile refreshed successfully on app load');
+                } else {
+                  throw new Error('Failed to fetch user profile');
+                }
+              } catch (profileError) {
+                console.log('⚠️ Failed to fetch fresh user profile, using stored data:', profileError);
+                // Fallback to stored user data if profile fetch fails
+                const userData = JSON.parse(storedUser) as UserProfile;
+                setUser(userData);
+                setIsAuthenticated(true);
+                setIsGuestMode(false);
+              }
 
               console.log('✅ Token refreshed successfully on app load');
             } else {
@@ -294,25 +317,50 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (response.data.success) {
         const { accessToken, refreshToken, user } = response.data;
 
-        // Choose storage based on rememberMe
+        // Store tokens
         const primaryStorage = credentials.rememberMe ? localStorage : sessionStorage;
-
-        // Store tokens in primary storage
         primaryStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
         primaryStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
-        primaryStorage.setItem(USER_KEY, JSON.stringify(user));
-
+        
         // Always store in localStorage for axios interceptor compatibility
         localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
         localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
-        localStorage.setItem(USER_KEY, JSON.stringify(user));
 
         // Set auth header for future requests
         axios.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
 
-        setUser(user);
-        setIsAuthenticated(true);
-        setIsGuestMode(false);
+        // Fetch fresh user profile from server instead of using login response data
+        try {
+          const profileResponse = await axios.get('/api/user/profile');
+          if (profileResponse.data.success) {
+            const freshUserData = profileResponse.data.data;
+            
+            // Store fresh user data
+            localStorage.setItem(USER_KEY, JSON.stringify(freshUserData));
+            if (!credentials.rememberMe) {
+              sessionStorage.setItem(USER_KEY, JSON.stringify(freshUserData));
+            }
+            
+            setUser(freshUserData);
+            setIsAuthenticated(true);
+            setIsGuestMode(false);
+            
+            console.log('✅ Fresh user profile loaded on login');
+          } else {
+            throw new Error('Failed to fetch user profile');
+          }
+        } catch (profileError) {
+          console.log('⚠️ Failed to fetch fresh user profile on login, using login response data:', profileError);
+          // Fallback to login response data if profile fetch fails
+          localStorage.setItem(USER_KEY, JSON.stringify(user));
+          if (!credentials.rememberMe) {
+            sessionStorage.setItem(USER_KEY, JSON.stringify(user));
+          }
+          
+          setUser(user);
+          setIsAuthenticated(true);
+          setIsGuestMode(false);
+        }
 
         // Clear guest mode flag
         localStorage.removeItem(GUEST_MODE_KEY);
