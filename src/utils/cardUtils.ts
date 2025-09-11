@@ -232,37 +232,58 @@ export function getAtkColor(atk: number, min: number, max: number): string {
 }
 
 /**
- * Validate and clamp stats to ensure they are within STAT_RANGES
- * Only allows health, attack, manaCost stats, ignores others
- * @param suggestedStats The stats object from AI response
- * @returns Validated stats object with clamped values
+ * Clamp a value to the specified min and max
+ * @param value The value to clamp
+ * @param min The minimum value
+ * @param max The maximum value
+ * @returns The clamped value
  */
-export function validateAndClampStats(suggestedStats: Record<string, unknown> | null | undefined): { health: number; attack: number; manaCost: number } {
-  const validatedStats = {
-    health: STAT_RANGES.HEALTH.min,
-    attack: STAT_RANGES.ATTACK.min,
-    manaCost: STAT_RANGES.MANA_COST.min
+export function clamp(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, value));
+}
+
+/**
+ * Filter and clamp stats to ensure they are within allowed ranges
+ * Only allows stats defined in STAT_RANGES and clamps their values
+ * @param suggestedStats The stats object from AI analysis
+ * @returns Filtered and clamped stats object
+ */
+export function filterAndClampStats(suggestedStats: Record<string, number> | undefined): { health: number; attack: number; manaCost: number } {
+  const defaultStats = {
+    health: 6,
+    attack: 6,
+    manaCost: 5
   };
 
-  // Only process the allowed stats
-  if (suggestedStats && typeof suggestedStats === 'object') {
-    // Health
-    if (typeof suggestedStats.health === 'number') {
-      validatedStats.health = Math.max(STAT_RANGES.HEALTH.min, Math.min(STAT_RANGES.HEALTH.max, suggestedStats.health));
-    }
-
-    // Attack
-    if (typeof suggestedStats.attack === 'number') {
-      validatedStats.attack = Math.max(STAT_RANGES.ATTACK.min, Math.min(STAT_RANGES.ATTACK.max, suggestedStats.attack));
-    }
-
-    // Mana Cost
-    if (typeof suggestedStats.manaCost === 'number') {
-      validatedStats.manaCost = Math.max(STAT_RANGES.MANA_COST.min, Math.min(STAT_RANGES.MANA_COST.max, suggestedStats.manaCost));
-    }
-
-    // Ignore any other stats like speed, stamina, etc.
+  if (!suggestedStats) {
+    return defaultStats;
   }
 
-  return validatedStats;
+  let health = defaultStats.health;
+  let attack = defaultStats.attack;
+  let manaCost = defaultStats.manaCost;
+
+  // Only process stats that are defined in STAT_RANGES
+  for (const statKey of Object.keys(STAT_RANGES)) {
+    const statName = statKey.toLowerCase().replace('_', '');
+    // Check for the stat in suggestedStats with case-insensitive matching
+    const matchingKey = Object.keys(suggestedStats).find(key => key.toLowerCase().replace('_', '') === statName);
+    
+    if (matchingKey) {
+      const value = suggestedStats[matchingKey];
+      if (typeof value === 'number' && !isNaN(value)) {
+        const range = STAT_RANGES[statKey as keyof typeof STAT_RANGES];
+        const clampedValue = clamp(value, range.min, range.max);
+        if (statName === 'health') {
+          health = clampedValue;
+        } else if (statName === 'attack') {
+          attack = clampedValue;
+        } else if (statName === 'manacost') {
+          manaCost = clampedValue;
+        }
+      }
+    }
+  }
+
+  return { health, attack, manaCost };
 }

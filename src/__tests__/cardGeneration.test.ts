@@ -1,4 +1,5 @@
 import { Card, Rarity, CardType, Element } from '../types/card';
+import { AIAnalysisResult } from '../types/api';
 
 // Mock uuid to avoid Jest ES module issues
 jest.mock('uuid', () => ({
@@ -6,7 +7,7 @@ jest.mock('uuid', () => ({
 }));
 
 import { getCardGenerationError } from '../data/defaultCards/errorCards';
-import { validateAndClampStats } from '../utils/cardUtils';
+import { filterAndClampStats } from '../utils/cardUtils';
 
 describe('cardGeneration', () => {
   describe('Fallback stats validation', () => {
@@ -98,6 +99,88 @@ describe('cardGeneration', () => {
     });
   });
 
+  describe('filterAndClampStats', () => {
+    it('should return default stats when suggestedStats is undefined', () => {
+      const result = filterAndClampStats(undefined);
+      expect(result).toEqual({
+        health: 6,
+        attack: 6,
+        manaCost: 5
+      });
+    });
+
+    it('should filter out invalid stats and keep only valid ones', () => {
+      const suggestedStats = {
+        health: 10,
+        attack: 8,
+        manaCost: 6,
+        stamina: 15,
+        speed: 20,
+        defense: 12
+      };
+      const result = filterAndClampStats(suggestedStats);
+      expect(result).toEqual({
+        health: 10,
+        attack: 8,
+        manaCost: 6
+      });
+      expect(result).not.toHaveProperty('stamina');
+      expect(result).not.toHaveProperty('speed');
+      expect(result).not.toHaveProperty('defense');
+    });
+
+    it('should clamp health to min and max', () => {
+      const resultMin = filterAndClampStats({ health: 0 });
+      const resultMax = filterAndClampStats({ health: 20 });
+      expect(resultMin.health).toBe(1); // min is 1
+      expect(resultMax.health).toBe(12); // max is 12
+    });
+
+    it('should clamp attack to min and max', () => {
+      const resultMin = filterAndClampStats({ attack: -5 });
+      const resultMax = filterAndClampStats({ attack: 20 });
+      expect(resultMin.attack).toBe(0); // min is 0
+      expect(resultMax.attack).toBe(12); // max is 12
+    });
+
+    it('should clamp manaCost to min and max', () => {
+      const resultMin = filterAndClampStats({ manaCost: -1 });
+      const resultMax = filterAndClampStats({ manaCost: 15 });
+      expect(resultMin.manaCost).toBe(0); // min is 0
+      expect(resultMax.manaCost).toBe(10); // max is 10
+    });
+
+    it('should handle mixed valid and invalid stats with clamping', () => {
+      const suggestedStats = {
+        health: 15, // over max
+        attack: -2, // under min
+        manaCost: 8, // valid
+        stamina: 10, // invalid
+        speed: 5 // invalid
+      };
+      const result = filterAndClampStats(suggestedStats);
+      expect(result).toEqual({
+        health: 12, // clamped to max
+        attack: 0, // clamped to min
+        manaCost: 8 // unchanged
+      });
+    });
+
+    it('should handle non-numeric values by using defaults', () => {
+      const suggestedStats = {
+        health: 'invalid' as unknown as number,
+        attack: NaN,
+        manaCost: 7
+      };
+      const result = filterAndClampStats(suggestedStats);
+      expect(result).toEqual({
+        health: 6, // default
+        attack: 6, // default
+        manaCost: 7 // valid
+      });
+    });
+  });
+
   describe('Error card generation', () => {
     it('should return error card with correct image', () => {
       const errorCard = getCardGenerationError();
@@ -130,75 +213,6 @@ describe('cardGeneration', () => {
       expect(errorCard.imageUrl).toBe('/error_card.png');
       expect(errorCard.imageUrl).not.toBe(providedImageUrl);
       expect(errorCard.imageUrl).toBe(originalImageUrl); // Should be same as original error image
-    });
-  });
-
-  describe('validateAndClampStats', () => {
-    it('should clamp stats within STAT_RANGES', () => {
-      // Test clamping high values
-      const highStats = { health: 20, attack: 15, manaCost: 12 };
-      const clamped = validateAndClampStats(highStats);
-      expect(clamped.health).toBe(12); // max for health
-      expect(clamped.attack).toBe(12); // max for attack
-      expect(clamped.manaCost).toBe(10); // max for manaCost
-
-      // Test clamping low values
-      const lowStats = { health: -5, attack: -2, manaCost: -1 };
-      const clampedLow = validateAndClampStats(lowStats);
-      expect(clampedLow.health).toBe(1); // min for health
-      expect(clampedLow.attack).toBe(0); // min for attack
-      expect(clampedLow.manaCost).toBe(0); // min for manaCost
-    });
-
-    it('should ignore invalid stats and only use valid ones', () => {
-      const mixedStats = {
-        health: 8,
-        attack: 5,
-        manaCost: 4,
-        speed: 10, // invalid
-        stamina: 15, // invalid
-        defense: 7 // invalid
-      };
-      const validated = validateAndClampStats(mixedStats);
-      expect(validated.health).toBe(8);
-      expect(validated.attack).toBe(5);
-      expect(validated.manaCost).toBe(4);
-      expect(Object.keys(validated)).toEqual(['health', 'attack', 'manaCost']);
-      expect(validated).not.toHaveProperty('speed');
-      expect(validated).not.toHaveProperty('stamina');
-      expect(validated).not.toHaveProperty('defense');
-    });
-
-    it('should handle missing stats with defaults', () => {
-      const partialStats = { health: 7 }; // missing attack and manaCost
-      const validated = validateAndClampStats(partialStats);
-      expect(validated.health).toBe(7);
-      expect(validated.attack).toBe(0); // min default
-      expect(validated.manaCost).toBe(0); // min default
-    });
-
-    it('should handle null/undefined input', () => {
-      const validatedNull = validateAndClampStats(null);
-      expect(validatedNull.health).toBe(1);
-      expect(validatedNull.attack).toBe(0);
-      expect(validatedNull.manaCost).toBe(0);
-
-      const validatedUndefined = validateAndClampStats(undefined);
-      expect(validatedUndefined.health).toBe(1);
-      expect(validatedUndefined.attack).toBe(0);
-      expect(validatedUndefined.manaCost).toBe(0);
-    });
-
-    it('should handle non-numeric values', () => {
-      const invalidStats = {
-        health: 'invalid',
-        attack: null,
-        manaCost: undefined
-      };
-      const validated = validateAndClampStats(invalidStats);
-      expect(validated.health).toBe(1); // default min
-      expect(validated.attack).toBe(0); // default min
-      expect(validated.manaCost).toBe(0); // default min
     });
   });
 });

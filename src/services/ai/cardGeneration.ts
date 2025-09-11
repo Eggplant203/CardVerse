@@ -6,7 +6,7 @@ import { DEBUFF_EFFECTS } from '@/data/effects/debuffs';
 import { TRIGGER_EFFECTS } from '@/data/effects/triggers';
 import { PERSISTENT_EFFECTS } from '@/data/effects/persistent';
 import { getCardGenerationError, getChatbotOverloadError } from '@/data/defaultCards/errorCards';
-import { validateAndClampStats } from '@/utils/cardUtils';
+import { filterAndClampStats } from '@/utils/cardUtils';
 
 /**
  * Generates a card from AI image analysis results
@@ -166,9 +166,8 @@ export function generateCard(
     manaCost: 5
   };
   
-  // Get stats with fallbacks for each property and validate/clamp them
-  const rawStats = analysisResult.suggestedStats || fallbackStats;
-  const stats = validateAndClampStats(rawStats);
+  // Filter and clamp stats to ensure they are within allowed ranges
+  const stats = filterAndClampStats(analysisResult.suggestedStats);
   
   // Create the card object with fallbacks for all properties
   const newCard: Card = {

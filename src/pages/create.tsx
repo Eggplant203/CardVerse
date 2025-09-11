@@ -701,10 +701,11 @@ const CreateCard: NextPage = () => {
                         
                         <h3 className="text-2xl font-title text-white mb-4 pr-8">{generatedCard.name}</h3>
                         
-                        {uploadedImage && (
+                        {/* Display image based on card type - same logic as preview */}
+                        {((generatedCard.type === CardType.ERROR && generatedCard.imageUrl) || uploadedImage) && (
                           <div className="mb-4 relative h-32 w-full">
                             <Image 
-                              src={uploadedImage} 
+                              src={generatedCard.type === CardType.ERROR ? generatedCard.imageUrl! : uploadedImage!} 
                               alt="Card" 
                               fill
                               className="absolute w-full h-full object-contain" 
