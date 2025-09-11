@@ -237,7 +237,7 @@ export function getAtkColor(atk: number, min: number, max: number): string {
  * @param suggestedStats The stats object from AI response
  * @returns Validated stats object with clamped values
  */
-export function validateAndClampStats(suggestedStats: any): { health: number; attack: number; manaCost: number } {
+export function validateAndClampStats(suggestedStats: Record<string, unknown> | null | undefined): { health: number; attack: number; manaCost: number } {
   const validatedStats = {
     health: STAT_RANGES.HEALTH.min,
     attack: STAT_RANGES.ATTACK.min,

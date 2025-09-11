@@ -1,5 +1,4 @@
 import { Card, Rarity, CardType, Element } from '../types/card';
-import { AIAnalysisResult } from '../types/api';
 
 // Mock uuid to avoid Jest ES module issues
 jest.mock('uuid', () => ({
