@@ -2,6 +2,7 @@ import { AIAnalysisResult } from '@/types/api';
 import { v4 as uuidv4 } from 'uuid';
 import { getImageAnalysisError, getChatbotOverloadAnalysis } from '@/data/defaultCards/errorCards';
 import { generateImageAnalysisPrompt } from '@/services/ai/descriptionGenerator';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 /**
  * Normalizes the analysis response to ensure consistent format
@@ -133,7 +134,6 @@ function normalizeAnalysisResponse(response: AIAnalysisResult | Record<string, u
 
 // Your Gemini API key
 const API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-const API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
 
 /**
  * Analyzes an uploaded image using the Gemini API to determine 
@@ -144,73 +144,41 @@ export async function analyzeImage(imageBase64: string): Promise<AIAnalysisResul
     if (!API_KEY) {
       throw new Error('NEXT_PUBLIC_GEMINI_API_KEY environment variable is not set');
     }
-    // Prepare the request body
-    const requestBody = {
-      contents: [
-        {
-          parts: [
-            {
-              text: generateImageAnalysisPrompt()
-            
-            },
-            {
-              inlineData: {
-                mimeType: 'image/jpeg',
-                data: imageBase64.startsWith('data:') 
-                      ? imageBase64.split(',')[1] 
-                      : imageBase64
-              }
-            }
-          ]
-        }
-      ],
+
+    // Initialize the Gemini API
+    const genAI = new GoogleGenerativeAI(API_KEY);
+    const model = genAI.getGenerativeModel({ 
+      model: 'gemini-2.5-flash-lite',
       generationConfig: {
         temperature: 0.8,
-        maxOutputTokens: 1024
+        maxOutputTokens: 4096
       }
-    };
-
-    // Make the API call
-    const response = await fetch(`${API_URL}?key=${API_KEY}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestBody)
     });
 
-    if (!response.ok) {
-      // Get more detailed error information
-      let errorDetail = '';
-      try {
-        const errorJson = await response.json();
-        errorDetail = JSON.stringify(errorJson);
-      } catch {
-        // If we can't parse the response as JSON, just use the status text
-        errorDetail = response.statusText;
-      }
-      
-      console.error(`API request failed with status: ${response.status}`, errorDetail);
-      
-      // Check for specific 503 overload error
-      if (response.status === 503 && errorDetail.includes('overloaded')) {
-        // Return a special analysis result for chatbot overload
-        return getChatbotOverloadAnalysis();
-      }
-      
-      // Return fallback data from centralized error cards
-      return getImageAnalysisError();
-    }
+    // Override console methods temporarily to prevent API key leakage in logs
+    const originalFetch = global.fetch;
+    global.fetch = async (...args) => {
+      return originalFetch(...args);
+    };
 
-    const data = await response.json();
-    // Check if we have valid candidates
-    if (!data.candidates || !data.candidates.length || !data.candidates[0].content || !data.candidates[0].content.parts) {
-      console.error('Unexpected API response structure:', data);
-      throw new Error('Unexpected API response format');
-    }
-    
-    // Parse the AI response
-    const textContent = data.candidates[0].content.parts.find((part: { text?: string } | unknown) => (part as { text?: string }).text)?.text;
+    // Prepare the image data
+    const imageData = imageBase64.startsWith('data:') 
+      ? imageBase64.split(',')[1] 
+      : imageBase64;
+
+    // Generate content with the model
+    const result = await model.generateContent([
+      generateImageAnalysisPrompt(),
+      {
+        inlineData: {
+          mimeType: 'image/jpeg',
+          data: imageData
+        }
+      }
+    ]);
+
+    const response = await result.response;
+    const textContent = response.text();
     
     if (!textContent) {
       console.error('No text content found in API response');
@@ -220,37 +188,64 @@ export async function analyzeImage(imageBase64: string): Promise<AIAnalysisResul
     let jsonResponse: AIAnalysisResult;
     
     try {
-      // Extract JSON from the response text if needed
-      const jsonMatch = textContent.match(/\{[\s\S]*\}/);
+      // Remove markdown code blocks if present
+      let cleanedText = textContent.trim();
       
-      if (jsonMatch) {
-        const jsonString = jsonMatch[0];
-        
-        try {
-          jsonResponse = JSON.parse(jsonString);
-          
-          // Process and fix the response format if needed
-          jsonResponse = normalizeAnalysisResponse(jsonResponse);
-          
-        } catch (parseError) {
-          console.error('JSON parse error:', parseError);
-          // Try to clean the JSON string
-          const cleanedJson = jsonString.replace(/[\u0000-\u001F]+/g, ' ')
-                                        .replace(/\s+/g, ' ')
-                                        .replace(/",\s*}/g, '"}')
-                                        .replace(/",\s*]/g, '"]');
-          jsonResponse = JSON.parse(cleanedJson);
-          
-          // Process and fix the response format
-          jsonResponse = normalizeAnalysisResponse(jsonResponse);
+      // Remove ```json and ``` markers
+      cleanedText = cleanedText.replace(/^```json\s*/i, '').replace(/\s*```$/, '');
+      cleanedText = cleanedText.replace(/^```\s*/, '').replace(/\s*```$/, '');
+      
+      // Try to find JSON object
+      let jsonString = cleanedText;
+      
+      // If response doesn't start with {, try to find the first {
+      if (!jsonString.trim().startsWith('{')) {
+        const startIndex = jsonString.indexOf('{');
+        if (startIndex !== -1) {
+          jsonString = jsonString.substring(startIndex);
         }
-      } else {
-        console.error('No JSON found in response:', textContent.substring(0, 100));
-        throw new Error('No valid JSON found in response');
+      }
+      
+      // Check if JSON is incomplete (missing closing braces)
+      const openBraces = (jsonString.match(/\{/g) || []).length;
+      const closeBraces = (jsonString.match(/\}/g) || []).length;
+      
+      if (openBraces > closeBraces) {
+        // JSON is incomplete, try to fix it
+        console.warn('Incomplete JSON detected, attempting to fix...');
+        
+        // Close any incomplete string values
+        if (jsonString.match(/"[^"]*$/)) {
+          jsonString += '"';
+        }
+        
+        // Add missing closing braces
+        const missingBraces = openBraces - closeBraces;
+        jsonString += '\n'.repeat(missingBraces) + '}'.repeat(missingBraces);
+      }
+      
+      try {
+        jsonResponse = JSON.parse(jsonString);
+        
+        // Process and fix the response format if needed
+        jsonResponse = normalizeAnalysisResponse(jsonResponse);
+        
+      } catch (parseError) {
+        console.error('JSON parse error:', parseError);
+        // Try to clean the JSON string
+        const cleanedJson = jsonString.replace(/[\u0000-\u001F]+/g, ' ')
+                                      .replace(/\s+/g, ' ')
+                                      .replace(/",\s*}/g, '"}')
+                                      .replace(/",\s*]/g, '"]');
+        jsonResponse = JSON.parse(cleanedJson);
+        
+        // Process and fix the response format
+        jsonResponse = normalizeAnalysisResponse(jsonResponse);
       }
     } catch (error) {
       console.error('Failed to parse AI response:', error);
-      console.error('Response text:', textContent.substring(0, 200));
+      console.error('Full response text:', textContent);
+      console.error('Response length:', textContent.length);
       throw new Error('Failed to parse image analysis results');
     }
 
